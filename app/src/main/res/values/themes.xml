@@ -1,0 +1,56 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.TalkSpace" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/test_1</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/test_1</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="Widget.TalkSpace.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="backgroundColor">#73a4bf</item>
+        <item name="backgroundStacked">@color/test_1</item>
+    </style>
+
+    <style name="ShapeAppearance.TestingTalkSpace.CornerShape" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">35dp</item>
+    </style>
+
+    <style name="ShapeAppearance.TestingTalkSpace.CornerShapeForeIconImage" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">10dp</item>
+    </style>
+
+    <style name="ShapeAppearance.TestingTalkSpace.CornerShapeForeFriendProfile" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">37%</item>
+    </style>
+
+    <style name="ShapeAppearance.TestingTalkSpace.CornerShapeForeFriendUnchack" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">35%</item>
+    </style>
+
+    <style name="ShapeAppearance.TestingTalkSpace.CornerShapeForeIconImage2" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">14dp</item>
+    </style>
+
+
+
+<!--    <style name="ShapeAppearance.TestingTalkSpace.BackgroundColor" parent="ShapeAppearance.MaterialComponents.MediumComponent">-->
+<!--        <item name="backgroundColor">#C3BFBF</item>-->
+<!--    </style>-->
+
+    <style name="ShapeAppearance.TestingTalkSpace.AppBarProfile" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">25%</item>
+    </style>
+
+    <style name="talk.navigationIcon" parent="Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="android:height">20dp</item>
+        <item name="android:width">20dp</item>
+    </style>
+</resources>

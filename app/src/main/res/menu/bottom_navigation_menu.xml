@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/item_chat"
+        android:title="Chat"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_mode_comment_24"/>
+
+    <item
+        android:id="@+id/item_call"
+        android:title="Call"
+        android:enabled="true"
+        android:icon="@drawable/ic_call"/>
+
+    <item
+        android:id="@+id/item_add"
+        android:title="Add"
+        android:enabled="true"
+        android:icon="@drawable/ic_add"/>
+
+    <item
+        android:id="@+id/item_contact"
+        android:title="Contacts"
+        android:enabled="true"
+        android:icon="@drawable/ic_person"/>
+
+    <item
+        android:id="@+id/item_setting"
+        android:title="Setting"
+        android:enabled="true"
+        android:icon="@drawable/ic_settings"/>
+
+</menu>

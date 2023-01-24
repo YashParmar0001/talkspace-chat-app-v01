@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/back_chat_button"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:layout_marginEnd="21dp"
+        android:src="@drawable/ic_baseline_arrow_back_ios_new_24"
+        app:layout_constraintBottom_toBottomOf="@+id/profile_icon"
+        app:layout_constraintEnd_toStartOf="@+id/profile_icon"
+        app:layout_constraintTop_toTopOf="@+id/profile_icon"
+        app:shapeAppearance="@style/ShapeAppearance.TestingTalkSpace.CornerShapeForeIconImage" />
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/profile_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="68dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/profile_dax"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearance="@style/ShapeAppearance.TestingTalkSpace.AppBarProfile" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="9dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/profile_icon"
+        app:layout_constraintStart_toEndOf="@+id/profile_icon"
+        app:layout_constraintTop_toTopOf="@+id/profile_icon">
+
+        <TextView
+            android:id="@+id/friend_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Yash Parmar"
+            android:textColor="#ffffff"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/friend_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Online"
+            android:textColor="#ffffff" />
+
+    </LinearLayout>
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/call_button"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="19dp"
+        android:background="#16384d"
+        android:backgroundTint="#14354A"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/profile_icon"
+        app:layout_constraintTop_toTopOf="@+id/profile_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:shapeAppearance="@style/ShapeAppearance.TestingTalkSpace.CornerShapeForeIconImage" />
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:elevation="10dp"
+        android:src="@drawable/ic_call"
+        app:layout_constraintTop_toTopOf="@+id/call_button"
+        app:layout_constraintBottom_toBottomOf="@+id/call_button"
+        app:layout_constraintEnd_toEndOf="@+id/call_button"
+        app:layout_constraintStart_toStartOf="@+id/call_button"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

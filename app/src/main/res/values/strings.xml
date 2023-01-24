@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Talk Space</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="welcome_title_name">TalkSpace</string>
+    <string name="welcome_title">Welcome to</string>
+    <string name="enter_number">Phone Number</string>
+    <string name="send_otp_btn">Send OTP</string>
+    <string name="otp_title">Otp</string>
+    <string name="verification_title">Verification</string>
+    <string name="resend_btn">Resend</string>
+    <string name="verify_btn">Verify</string>
+    <string name="did_not_receive_the_otp_text">Did\'t receive the OTP?</string>
+    <string name="resend_otp_text_btn">Resend OTP</string>
+    <string name="name_title">Name :</string>
+    <string name="about_title">About to :</string>
+    <string name="continue_btn_text">Continue</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
