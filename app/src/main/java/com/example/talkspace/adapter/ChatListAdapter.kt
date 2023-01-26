@@ -49,7 +49,7 @@ class ChatListAdapter(private val chatViewModel: ChatViewModel) :
         }
 
         override fun areContentsTheSame(oldItem: SQLChat, newItem: SQLChat): Boolean {
-            return oldItem.friendName == newItem.friendName
+            return oldItem.phoneNumber == newItem.phoneNumber
         }
     }
 

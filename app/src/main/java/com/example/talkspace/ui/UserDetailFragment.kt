@@ -23,7 +23,8 @@ import com.example.talkspace.repositories.UserRepositories
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
-import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.FirebaseFirestore
+//import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
@@ -116,7 +117,7 @@ class UserDetailFragment : Fragment() {
 
     private fun loadUserDetails() {
         Log.d("UserDetailFragment", "user Id : ${currentUser?.uid}")
-        Firebase.firestore.collection("users")
+        FirebaseFirestore.getInstance().collection("users")
             .document(currentUser?.phoneNumber.toString())
             .addSnapshotListener { snapshot, e ->
                 if (e != null) {

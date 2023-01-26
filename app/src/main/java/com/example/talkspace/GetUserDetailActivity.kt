@@ -16,7 +16,7 @@ import com.example.talkspace.repositories.UserRepositories
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
-import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
@@ -25,7 +25,7 @@ class GetUserDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityGetUserDetailBinding
 
-    private val db = Firebase.firestore
+    private val db = FirebaseFirestore.getInstance()
 
     private val currentUser = Firebase.auth.currentUser
 
@@ -123,7 +123,7 @@ class GetUserDetailActivity : AppCompatActivity() {
             .addOnSuccessListener { taskSnapshot ->
                 taskSnapshot.metadata?.reference?.downloadUrl
                     ?.addOnSuccessListener { uri ->
-                        Firebase.firestore.collection("users").document(currentUser.phoneNumber.toString())
+                        FirebaseFirestore.getInstance().collection("users").document(currentUser.phoneNumber.toString())
                             .update("userPhotoUrl", uri)
                             .addOnSuccessListener {
                                 Log.d("GetUserDetailActivity", "User photo upload")

@@ -26,7 +26,10 @@ class ChatListFragment : Fragment() {
 
     private lateinit var binding: FragmentFriendListBinding
     private val chatViewModel: ChatViewModel by activityViewModels {
-        ChatViewModelFactory((activity?.application as ApplicationClass).repository)
+        ChatViewModelFactory(
+            (activity?.application as ApplicationClass).chatRepository,
+            (activity?.application as ApplicationClass).contactRepository
+        )
     }
 
     override fun onCreateView(
@@ -95,12 +98,12 @@ class ChatListFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        chatViewModel.startListeningForChats(requireContext())
+//        chatViewModel.startListeningForChats(requireContext())
     }
 
     override fun onStop() {
         super.onStop()
-        chatViewModel.stopListeningForChats()
+//        chatViewModel.stopListeningForChats()
     }
 
     override fun onDestroy() {

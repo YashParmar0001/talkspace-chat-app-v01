@@ -17,7 +17,8 @@ import com.example.talkspace.R
 import com.example.talkspace.repositories.UserRepositories
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
-import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.FirebaseFirestore
+//import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
@@ -70,7 +71,7 @@ class CustomPhotoDialog(): DialogFragment() {
                     .addOnSuccessListener { taskSnapshot ->
                         taskSnapshot.metadata?.reference?.downloadUrl
                             ?.addOnSuccessListener { uri ->
-                                Firebase.firestore.collection("users")
+                                FirebaseFirestore.getInstance().collection("users")
                                     .document(currentUser.phoneNumber.toString())
                                     .update("userPhotoUrl", uri)
                                     .addOnSuccessListener {

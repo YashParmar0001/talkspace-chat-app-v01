@@ -11,10 +11,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.asFlow
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.talkspace.ApplicationClass
 import com.example.talkspace.R
 import com.example.talkspace.adapter.MessageAdapter
@@ -24,9 +22,7 @@ import com.example.talkspace.observers.MyScrollToBottomObserver
 import com.example.talkspace.ui.currentUser
 import com.example.talkspace.viewmodels.ChatViewModel
 import com.example.talkspace.viewmodels.ChatViewModelFactory
-import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
 
 
 class ChatFragment : Fragment() {
@@ -39,7 +35,10 @@ class ChatFragment : Fragment() {
     private lateinit var adapter: MessageAdapter
 
     private val chatViewModel: ChatViewModel by activityViewModels {
-        ChatViewModelFactory((activity?.application as ApplicationClass).repository)
+        ChatViewModelFactory(
+            (activity?.application as ApplicationClass).chatRepository,
+            (activity?.application as ApplicationClass).contactRepository
+        )
     }
 
     override fun onCreateView(

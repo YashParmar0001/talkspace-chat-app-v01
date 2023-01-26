@@ -1,6 +1,5 @@
 package com.example.talkspace.ui.chatsection
 
-import android.Manifest
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.util.Log
@@ -11,22 +10,32 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LiveData
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.talkspace.ApplicationClass
 import com.example.talkspace.R
+import com.example.talkspace.adapter.ContactAdapter
 import com.example.talkspace.databinding.FragmentContactsOnAppBinding
+import com.example.talkspace.model.SQLiteContact
 import com.example.talkspace.viewmodels.ChatViewModel
 import com.example.talkspace.viewmodels.ChatViewModelFactory
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
 
 class ContactsOnAppFragment : Fragment() {
 
     private lateinit var binding: FragmentContactsOnAppBinding
 
+    private lateinit var contacts: LiveData<List<SQLiteContact>>
+
     // Firebase instance variables
     private val firestore = FirebaseFirestore.getInstance()
     private val chatViewModel: ChatViewModel by activityViewModels {
-        ChatViewModelFactory((activity?.application as ApplicationClass).repository)
+        ChatViewModelFactory(
+            (activity?.application as ApplicationClass).chatRepository,
+            (activity?.application as ApplicationClass).contactRepository
+        )
     }
 
     private val pickContact = registerForActivityResult(ActivityResultContracts.PickContact()) { uri ->
@@ -78,26 +87,27 @@ class ContactsOnAppFragment : Fragment() {
     ): View {
         binding = FragmentContactsOnAppBinding.inflate(inflater, container, false)
 
+        contacts = chatViewModel.getContacts()
+
+        val layoutManager =
+            LinearLayoutManager(requireContext())
+        layoutManager.orientation = LinearLayoutManager.VERTICAL
+        binding.contactRecyclerview.layoutManager = layoutManager
+
+        val adapter = ContactAdapter(chatViewModel)
+        binding.contactRecyclerview.adapter = adapter
+
+        contacts.observe(viewLifecycleOwner) { contacts ->
+            contacts?.let {
+                adapter.submitList(contacts)
+            }
+        }
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // TODO: For permissions
-        val requestPermissionLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { isGranted: Boolean ->
-                if (isGranted) {
-                    Log.i("Permission: ", "Granted")
-                } else {
-                    Log.i("Permission: ", "Denied")
-                }
-            }
-
-        requestPermissionLauncher.launch(
-            Manifest.permission.READ_CONTACTS
-        )
         binding.addPhoneContact.setOnClickListener {
             pickContact.launch(null)
         }
@@ -112,17 +122,26 @@ class ContactsOnAppFragment : Fragment() {
                     Toast.makeText(
                         requireContext(),
                         "User does not use the app",
-                        Toast.LENGTH_LONG
+                        Toast.LENGTH_SHORT
                     ).show()
                 }else {
                     Toast.makeText(
                         requireContext(),
                         "User uses the app",
-                        Toast.LENGTH_LONG
+                        Toast.LENGTH_SHORT
                     ).show()
 
                     Log.d("ContactFragment", "friendId: $friendId")
                     Log.d("ContactFragment", "friendName: $friendName")
+
+                    val contact = SQLiteContact(
+                        friendId,
+                        friendName,
+                        "",
+                        ""
+                    )
+                    chatViewModel.addContact(contact)
+
                     chatViewModel.setCurrentFriendId(friendId)
                     chatViewModel.setCurrentFriendName(friendName)
                     findNavController().navigate(R.id.action_contactsOnApp_to_chatFragment)

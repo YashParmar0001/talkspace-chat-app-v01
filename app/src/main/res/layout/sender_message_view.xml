@@ -1,48 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:layout_gravity="end"
-    android:layout_marginStart="0dp"
-    android:padding="8dp">
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/message_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/sender_message_background"
-        android:orientation="vertical"
-        android:layout_marginStart="125dp"
-        android:padding="8dp">
+        android:textAlignment="center"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
             android:id="@+id/message_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#ffffff"
-            android:textSize="20sp"
-            tools:text="This is Demo message" />
-
+            android:minWidth="60dp"
+            android:textAlignment="textStart"
+            android:textColor="#FFFFFF"
+            android:maxWidth="200dp"
+            android:textSize="18sp"
+            android:text="how are you"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:background="@drawable/sender_message_background"
+            app:layout_constraintEnd_toEndOf="@+id/message_container"
+            app:layout_constraintTop_toTopOf="@+id/message_container"
+            app:layout_constraintBottom_toTopOf="@+id/message_time"/>
         <TextView
             android:id="@+id/message_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginTop="5dp"
-            android:textColor="#828282"
             android:text="12:00"
             android:textSize="15sp"
-            android:textStyle="italic" />
-    </LinearLayout>
+            app:layout_constraintEnd_toEndOf="@+id/message_container"
+            app:layout_constraintTop_toBottomOf="@id/message_text"
+            app:layout_constraintBottom_toBottomOf="@+id/message_container"/>
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:scaleType="centerCrop"
-        android:layout_marginStart="10dp"
-        android:src="@drawable/profile_dax"
-        android:clickable="true"
-        style="@style/ShapeAppearance.TestingTalkSpace.AppBarProfile" />
-
-</LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

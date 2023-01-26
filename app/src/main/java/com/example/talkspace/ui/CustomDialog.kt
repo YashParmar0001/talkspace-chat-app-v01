@@ -11,7 +11,8 @@ import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.talkspace.R
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.FirebaseFirestore
+//import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 class CustomDialog() : DialogFragment() {
@@ -57,7 +58,7 @@ class CustomDialog() : DialogFragment() {
     }
 
     private fun updateDataBase(key: String, updateText: String) {
-        Firebase.firestore.collection("users")
+        FirebaseFirestore.getInstance().collection("users")
             .document(Firebase.auth.currentUser?.phoneNumber.toString())
             .update(key, updateText)
             .addOnSuccessListener { Log.d("Update ", "update user detail $key") }
