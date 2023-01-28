@@ -22,6 +22,11 @@ import com.example.talkspace.viewmodels.ChatViewModel
 import com.example.talkspace.viewmodels.ChatViewModelFactory
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import androidx.core.view.accessibility.AccessibilityEventCompat.setAction
+import com.google.android.material.snackbar.Snackbar
 
 class ContactsOnAppFragment : Fragment() {
 
@@ -38,48 +43,51 @@ class ContactsOnAppFragment : Fragment() {
         )
     }
 
-    private val pickContact = registerForActivityResult(ActivityResultContracts.PickContact()) { uri ->
-        Log.d("PickContact", "Contact: $uri")
-        if (uri == null) {
-            return@registerForActivityResult
+    private val pickContact =
+        registerForActivityResult(ActivityResultContracts.PickContact()) { uri ->
+            Log.d("PickContact", "Contact: $uri")
+            if (uri == null) {
+                return@registerForActivityResult
+            }
+
+            val contentResolver = requireContext().contentResolver
+
+            // For getting contact name
+            val contactCursor = contentResolver.query(uri, null, null, null, null)
+            val nameIndex =
+                contactCursor?.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
+            contactCursor?.moveToFirst()
+            val contactName = nameIndex?.let { contactCursor.getString(it) }
+            Log.d("PickContact", "Contact name: $contactName")
+
+            // For getting phone number
+            val phoneCursor = contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                arrayOf(uri.lastPathSegment),
+                null
+            )
+            var phoneNumber = ""
+            if (phoneCursor != null && phoneCursor.moveToFirst()) {
+                val index =
+                    phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                if (index >= 0) phoneNumber = phoneCursor.getString(index)
+            }
+
+            // Process phone number
+            phoneNumber = phoneNumber.replace(" ", "")
+            Log.d("PickContact", "Phone number after trim: $phoneNumber")
+            val length = phoneNumber.length
+            if (length != 10) {
+                phoneNumber = phoneNumber.substring(3, length)
+            }
+            Log.d("PickContact", "Contact number: $phoneNumber")
+            contactCursor?.close()
+
+            // Checking if contact is present in Firebase
+            checkUserAndGoToChat("+91$phoneNumber", contactName.toString())
         }
-
-        val contentResolver = requireContext().contentResolver
-
-        // For getting contact name
-        val contactCursor = contentResolver.query(uri, null, null, null, null)
-        val nameIndex = contactCursor?.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
-        contactCursor?.moveToFirst()
-        val contactName = nameIndex?.let { contactCursor.getString(it) }
-        Log.d("PickContact", "Contact name: $contactName")
-
-        // For getting phone number
-        val phoneCursor = contentResolver.query(
-            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-            null,
-            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-            arrayOf(uri.lastPathSegment),
-            null
-        )
-        var phoneNumber = ""
-        if (phoneCursor != null && phoneCursor.moveToFirst()) {
-            val index = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-            if (index >= 0) phoneNumber = phoneCursor.getString(index)
-        }
-
-        // Process phone number
-        phoneNumber = phoneNumber.replace(" ", "")
-        Log.d("PickContact", "Phone number after trim: $phoneNumber")
-        val length = phoneNumber.length
-        if (length != 10) {
-            phoneNumber = phoneNumber.substring(3, length)
-        }
-        Log.d("PickContact", "Contact number: $phoneNumber")
-        contactCursor?.close()
-
-        // Checking if contact is present in Firebase
-        checkUserAndGoToChat("+91$phoneNumber", contactName.toString())
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -94,12 +102,15 @@ class ContactsOnAppFragment : Fragment() {
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.contactRecyclerview.layoutManager = layoutManager
 
-        val adapter = ContactAdapter(chatViewModel)
+        val adapter = ContactAdapter(requireContext())
         binding.contactRecyclerview.adapter = adapter
 
         contacts.observe(viewLifecycleOwner) { contacts ->
             contacts?.let {
-                adapter.submitList(contacts)
+                val dummy = SQLiteContact("", "", "", "")
+                val extraElements = mutableListOf(dummy, dummy, dummy)
+                extraElements.addAll(contacts)
+                adapter.submitList(extraElements)
             }
         }
 
@@ -109,9 +120,41 @@ class ContactsOnAppFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.addPhoneContact.setOnClickListener {
-            pickContact.launch(null)
+            // First check for permission
+            val permission = Manifest.permission.READ_CONTACTS
+            if (ContextCompat.checkSelfPermission(requireContext(), permission)
+                == PackageManager.PERMISSION_GRANTED
+            ) {
+                // Contact reading permission has been granted
+                pickContact.launch(null)
+            } else {
+                // Request permission for reading contact
+                requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+            }
         }
     }
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                Log.i("Permission: ", "Granted")
+                pickContact.launch(null)
+            } else {
+                Log.i("Permission: ", "Denied")
+                view?.let {
+                    Snackbar.make(
+                        it,
+                        "You need to grant permission in order to add contacts",
+                        Snackbar.LENGTH_LONG
+                    )
+                        .setAction("Dismiss") {
+                            Log.d("Permission", "Dismissed")
+                        }.show()
+                }
+            }
+        }
 
     private fun checkUserAndGoToChat(friendId: String, friendName: String) {
         firestore.collection("users")
@@ -124,7 +167,7 @@ class ContactsOnAppFragment : Fragment() {
                         "User does not use the app",
                         Toast.LENGTH_SHORT
                     ).show()
-                }else {
+                } else {
                     Toast.makeText(
                         requireContext(),
                         "User uses the app",

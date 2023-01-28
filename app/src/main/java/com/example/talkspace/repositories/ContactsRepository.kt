@@ -29,7 +29,7 @@ class ContactsRepository(
 
         // Add contact to the firebase
         firestore.collection("users")
-            .document(currentUser.uid)
+            .document(currentUser.phoneNumber.toString())
             .collection("contacts")
             .document(contact.contactId)
             .set(contact.toFirebaseObject())

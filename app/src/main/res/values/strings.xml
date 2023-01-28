@@ -24,4 +24,7 @@
     <string name="continue_btn_text">Continue</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="create_group">Create group</string>
+    <string name="create_new_contact">Create new contact</string>
+    <string name="add_contact">Add contact</string>
 </resources>

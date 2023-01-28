@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingTop="10dp"
-    android:paddingBottom="10dp"
-    android:id="@+id/button_click">
+    android:paddingBottom="10dp">
 
     <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/contact_photo"
-        android:layout_width="53dp"
-        android:layout_height="53dp"
+        android:id="@+id/contact_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:padding="2dp"
         android:layout_marginStart="5dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/profile_dax"
+        android:src="@drawable/ic_baseline_person_24"
+        android:tint="@color/black"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,26 +23,15 @@
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
-        android:id="@+id/contact_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Yash Parmar"
+        android:text="@string/add_contact"
         android:textStyle="bold"
         android:layout_marginStart="18dp"
         android:textSize="20sp"
         android:textColor="@color/black"
-        app:layout_constraintTop_toTopOf="@+id/contact_photo"
-        app:layout_constraintBottom_toTopOf="@+id/contact_about"
-        app:layout_constraintStart_toEndOf="@+id/contact_photo" />
-
-    <TextView
-        android:id="@+id/contact_about"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Khatarnak Coder"
-        android:layout_marginStart="18dp"
-        app:layout_constraintTop_toBottomOf="@+id/contact_name"
-        app:layout_constraintBottom_toBottomOf="@+id/contact_photo"
-        app:layout_constraintStart_toEndOf="@+id/contact_photo"/>
+        app:layout_constraintTop_toTopOf="@+id/contact_icon"
+        app:layout_constraintStart_toEndOf="@+id/contact_icon"
+        app:layout_constraintBottom_toBottomOf="@id/contact_icon"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

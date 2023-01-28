@@ -1,6 +1,7 @@
 package com.example.talkspace.ui
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -21,6 +23,7 @@ import com.example.talkspace.adapter.StatusAdapter
 import com.example.talkspace.databinding.FragmentFriendListBinding
 import com.example.talkspace.viewmodels.ChatViewModel
 import com.example.talkspace.viewmodels.ChatViewModelFactory
+import com.google.android.material.snackbar.Snackbar
 
 class ChatListFragment : Fragment() {
 
@@ -36,7 +39,7 @@ class ChatListFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout for this fragment
+
         binding = FragmentFriendListBinding.inflate(inflater, container, false)
 
         // For stories
@@ -58,22 +61,6 @@ class ChatListFragment : Fragment() {
             }
         }
 
-        // First check for permissions
-        val requestPermissionLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { isGranted: Boolean ->
-                if (isGranted) {
-                    Log.i("Permission: ", "Granted")
-                } else {
-                    Log.i("Permission: ", "Denied")
-                }
-            }
-
-        requestPermissionLauncher.launch(
-            Manifest.permission.READ_CONTACTS
-        )
-
         return binding.root
     }
 
@@ -94,16 +81,6 @@ class ChatListFragment : Fragment() {
         profileIcon?.setOnClickListener {
             findNavController().navigate(R.id.action_mainFragment_to_userDetailFragment)
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-//        chatViewModel.startListeningForChats(requireContext())
-    }
-
-    override fun onStop() {
-        super.onStop()
-//        chatViewModel.stopListeningForChats()
     }
 
     override fun onDestroy() {
