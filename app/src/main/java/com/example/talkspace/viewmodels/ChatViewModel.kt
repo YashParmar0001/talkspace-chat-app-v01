@@ -1,5 +1,6 @@
 package com.example.talkspace.viewmodels
 
+import android.content.ContentResolver
 import android.content.Context
 import androidx.lifecycle.*
 import com.example.talkspace.model.FirebaseMessage
@@ -85,6 +86,10 @@ class ChatViewModel(
 
     fun stopListeningForContacts() {
         contactsRepository.stopListeningForContacts()
+    }
+
+    fun getAllContacts(contentResolver: ContentResolver): List<SQLiteContact> {
+        return contactsRepository.getAllContacts(contentResolver, viewModelScope)
     }
 }
 

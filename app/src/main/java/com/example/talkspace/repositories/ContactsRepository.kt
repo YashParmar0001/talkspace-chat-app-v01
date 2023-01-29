@@ -1,5 +1,8 @@
 package com.example.talkspace.repositories
 
+import android.annotation.SuppressLint
+import android.content.ContentResolver
+import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
@@ -76,7 +79,8 @@ class ContactsRepository(
                                         contactData["contactId"].toString(),
                                         contactData["contactName"].toString(),
                                         "",
-                                        ""
+                                        "",
+                                        true
                                     )
 
                                     coroutineScope.launch(Dispatchers.IO) {
@@ -97,5 +101,89 @@ class ContactsRepository(
         Log.d("Contacts", "Stopping listener for contacts...")
         registration?.remove()
         registration = null
+    }
+
+//    fun checkIfAppUser(contactNumber: String): Boolean {
+//        firestore.collection("users")
+//            .document(contactNumber)
+//            .get().addOnSuccessListener {
+//
+//            }
+//    }
+
+    @SuppressLint("Range")
+    fun getAllContacts(contentResolver: ContentResolver, coroutineScope: CoroutineScope): List<SQLiteContact> {
+        // Getting all the contacts from the phone
+        val contacts = mutableListOf<SQLiteContact>()
+        val cursor = contentResolver.query(
+            ContactsContract.Contacts.CONTENT_URI,
+            null,
+            null,
+            null,
+            null)
+
+        if (cursor == null) {
+            Log.d("Contacts", "Contact cursor is null")
+        }else {
+            while (cursor.moveToNext()) {
+                // Get contact info using cursor
+                val contactId = cursor.getString(
+                    cursor.getColumnIndex(ContactsContract.Contacts._ID)
+                )
+                val contactName = cursor.getString(
+                    cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
+                )
+                val contactPhoneNumber = getPhoneNumber(contactId, contentResolver)
+
+                contacts.add(SQLiteContact(
+                    contactPhoneNumber,
+                    contactName,
+                    "",
+                    "",
+                    false
+                ))
+            }
+        }
+        cursor?.close()
+
+        // Now add all contacts to the SQLite database
+        for (contact in contacts) {
+            // Check if contact uses the app or not and add to database accordingly
+            firestore.collection("users")
+                .document(contact.contactId)
+                .get().addOnSuccessListener { snapshot ->
+                    coroutineScope.launch(Dispatchers.IO) {
+                        contact.isAppUser = snapshot.exists()
+                        contactsDao.insert(contact)
+                    }
+                }
+        }
+        return contacts
+    }
+
+    @SuppressLint("Range")
+    private fun getPhoneNumber(contactId: String, contentResolver: ContentResolver): String {
+        var phoneNumber = ""
+        val phoneCursor = contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            null,
+            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+            arrayOf(contactId),
+            null
+        )
+
+        if ((phoneCursor?.count ?: 0) > 0) {
+            while (phoneCursor != null && phoneCursor.moveToNext()) {
+                phoneNumber = phoneCursor.getString(
+                    phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                )
+            }
+            phoneCursor?.close()
+        }
+        phoneNumber = phoneNumber.replace(" ", "")
+        if (!phoneNumber.contains("+91")) {
+            phoneNumber = "+91$phoneNumber"
+        }
+        return phoneNumber
     }
 }

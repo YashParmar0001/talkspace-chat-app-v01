@@ -32,7 +32,7 @@ class ContactAdapter(val context: Context) :
             Log.d("Contacts", "Contact clicked: ${item.contactName}")
         }
 
-        val demiContact = SQLiteContact("", "", "", "")
+        val demiContact = SQLiteContact("", "", "", "", false)
 
         when (holder.itemViewType) {
             0 -> {

@@ -107,7 +107,7 @@ class ContactsOnAppFragment : Fragment() {
 
         contacts.observe(viewLifecycleOwner) { contacts ->
             contacts?.let {
-                val dummy = SQLiteContact("", "", "", "")
+                val dummy = SQLiteContact("", "", "", "", false)
                 val extraElements = mutableListOf(dummy, dummy, dummy)
                 extraElements.addAll(contacts)
                 adapter.submitList(extraElements)
@@ -181,7 +181,8 @@ class ContactsOnAppFragment : Fragment() {
                         friendId,
                         friendName,
                         "",
-                        ""
+                        "",
+                        false
                     )
                     chatViewModel.addContact(contact)
 

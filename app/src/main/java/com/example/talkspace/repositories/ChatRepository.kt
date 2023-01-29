@@ -178,7 +178,8 @@ class ChatRepository(
                                         newFriendId,
                                         newFriendName,
                                         "",
-                                        ""
+                                        "",
+                                        false
                                     )
 
                                     firestore.collection("users")
