@@ -1,9 +1,6 @@
 package com.example.talkspace.repositories
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.example.talkspace.model.SQLiteContact
 import kotlinx.coroutines.flow.Flow
 
@@ -12,6 +9,9 @@ interface ContactsDao {
     @Query("select * from contacts order by contactName")
     fun getContacts(): Flow<List<SQLiteContact>>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(contact: SQLiteContact)
+
+    @Delete
+    suspend fun delete(contact: SQLiteContact)
 }

@@ -10,6 +10,8 @@ import com.example.talkspace.model.SQLiteMessage
 import com.example.talkspace.repositories.ChatRepository
 import com.example.talkspace.repositories.ContactsRepository
 import com.example.talkspace.ui.currentUser
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
 
 class ChatViewModel(
     private val chatRepository: ChatRepository,
@@ -56,10 +58,6 @@ class ChatViewModel(
         chatRepository.addChat(chat, viewModelScope)
     }
 
-    fun addContact(contact: SQLiteContact) {
-        contactsRepository.addContact(contact, viewModelScope)
-    }
-
     fun startListeningForMessages() {
         chatRepository.startListeningForMessages(
             currentUser?.phoneNumber.toString(),
@@ -88,8 +86,8 @@ class ChatViewModel(
         contactsRepository.stopListeningForContacts()
     }
 
-    fun getAllContacts(contentResolver: ContentResolver): List<SQLiteContact> {
-        return contactsRepository.getAllContacts(contentResolver, viewModelScope)
+    fun syncContacts(firestore: FirebaseFirestore, contentResolver: ContentResolver) {
+        contactsRepository.syncContacts(firestore, contentResolver)
     }
 }
 

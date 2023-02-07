@@ -184,7 +184,7 @@ class ContactsOnAppFragment : Fragment() {
                         "",
                         false
                     )
-                    chatViewModel.addContact(contact)
+//                    chatViewModel.addContact(contact)
 
                     chatViewModel.setCurrentFriendId(friendId)
                     chatViewModel.setCurrentFriendName(friendName)

@@ -132,10 +132,6 @@ class ChatRepository(
 
     fun startListeningForChats(coroutineScope: CoroutineScope, context: Context) {
         Log.d("Chats", "Starting listener for chats...")
-//        val settings = FirebaseFirestoreSettings.Builder()
-//            .setPersistenceEnabled(false)
-//            .build()
-//        firestore.firestoreSettings = settings
         chatRegistration = firestore.collection("users")
             .document(currentUser?.phoneNumber.toString())
             .collection("friends")
@@ -182,30 +178,30 @@ class ChatRepository(
                                         false
                                     )
 
-                                    firestore.collection("users")
-                                        .document(currentUser?.phoneNumber.toString())
-                                        .collection("contacts")
-                                        .document(newFriendId)
-                                        .set(contact)
-                                        .addOnSuccessListener {
-                                            Log.d("Contacts", "Contact added successfully")
-
-                                        }.addOnFailureListener {
-                                            Log.d("Contacts", "Failed to add contact", it)
-                                        }
-
-                                    if (newFriendName != newFriendId) {
-                                        firestore.collection("users")
-                                            .document(currentUser?.phoneNumber.toString())
-                                            .collection("friends")
-                                            .document(newFriendId)
-                                            .update("friendName", newFriendName)
-                                            .addOnSuccessListener {
-                                                Log.d("Chats", "New chat's name updated")
-                                            }.addOnFailureListener {
-                                                Log.d("Chats", "Error updating new chat name", it)
-                                            }
-                                    }
+//                                    firestore.collection("users")
+//                                        .document(currentUser?.phoneNumber.toString())
+//                                        .collection("contacts")
+//                                        .document(newFriendId)
+//                                        .set(contact)
+//                                        .addOnSuccessListener {
+//                                            Log.d("Contacts", "Contact added successfully")
+//
+//                                        }.addOnFailureListener {
+//                                            Log.d("Contacts", "Failed to add contact", it)
+//                                        }
+//
+//                                    if (newFriendName != newFriendId) {
+//                                        firestore.collection("users")
+//                                            .document(currentUser?.phoneNumber.toString())
+//                                            .collection("friends")
+//                                            .document(newFriendId)
+//                                            .update("friendName", newFriendName)
+//                                            .addOnSuccessListener {
+//                                                Log.d("Chats", "New chat's name updated")
+//                                            }.addOnFailureListener {
+//                                                Log.d("Chats", "Error updating new chat name", it)
+//                                            }
+//                                    }
                                 }
                                 else -> {
                                     Log.d("Chats", "Other operations done")

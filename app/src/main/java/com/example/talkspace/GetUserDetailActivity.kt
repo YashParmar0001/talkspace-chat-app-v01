@@ -8,11 +8,16 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.talkspace.databinding.ActivityGetUserDetailBinding
 import com.example.talkspace.model.User
 import com.example.talkspace.repositories.UserRepositories
+import com.example.talkspace.ui.storageRef
+import com.example.talkspace.viewmodels.ChatViewModel
+import com.example.talkspace.viewmodels.ChatViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
