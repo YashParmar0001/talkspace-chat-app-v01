@@ -28,6 +28,14 @@ class ContactsRepository(
         return contactsDao.getContacts().asLiveData()
     }
 
+    fun getAppUserContacts(): LiveData<List<SQLiteContact>> {
+        return contactsDao.getAppUserContacts().asLiveData()
+    }
+
+    fun getNonAppUserContacts(): LiveData<List<SQLiteContact>> {
+        return contactsDao.getNonAppUserContacts().asLiveData()
+    }
+
     fun startListeningForContacts(coroutineScope: CoroutineScope) {
         Log.d("Contacts", "Start listening for contacts...")
 

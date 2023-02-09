@@ -14,4 +14,10 @@ interface ContactsDao {
 
     @Delete
     suspend fun delete(contact: SQLiteContact)
+
+    @Query("select * from contacts where isAppUser = 1 order by contactName")
+    fun getAppUserContacts(): Flow<List<SQLiteContact>>
+
+    @Query("select * from contacts where isAppUser = 0 order by contactName")
+    fun getNonAppUserContacts(): Flow<List<SQLiteContact>>
 }

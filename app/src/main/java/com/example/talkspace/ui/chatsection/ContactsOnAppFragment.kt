@@ -26,6 +26,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.core.view.accessibility.AccessibilityEventCompat.setAction
+import com.example.talkspace.adapter.SectionedContactAdapter
 import com.google.android.material.snackbar.Snackbar
 
 class ContactsOnAppFragment : Fragment() {
@@ -33,6 +34,8 @@ class ContactsOnAppFragment : Fragment() {
     private lateinit var binding: FragmentContactsOnAppBinding
 
     private lateinit var contacts: LiveData<List<SQLiteContact>>
+    private lateinit var appUserContacts: LiveData<List<SQLiteContact>>
+    private lateinit var nonAppUserContacts: LiveData<List<SQLiteContact>>
 
     // Firebase instance variables
     private val firestore = FirebaseFirestore.getInstance()
@@ -96,21 +99,33 @@ class ContactsOnAppFragment : Fragment() {
         binding = FragmentContactsOnAppBinding.inflate(inflater, container, false)
 
         contacts = chatViewModel.getContacts()
+        appUserContacts = chatViewModel.getAppUserContacts()
+        nonAppUserContacts = chatViewModel.getNonAppUserContacts()
 
         val layoutManager =
             LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.contactRecyclerview.layoutManager = layoutManager
 
-        val adapter = ContactAdapter(requireContext())
-        binding.contactRecyclerview.adapter = adapter
+//        contacts.observe(viewLifecycleOwner) { contacts ->
+//            contacts?.let {
+//                val adapter = SectionedContactAdapter(
+//                    contacts, contacts
+//                )
+//                binding.contactRecyclerview.adapter = adapter
+//            }
+//        }
 
-        contacts.observe(viewLifecycleOwner) { contacts ->
-            contacts?.let {
-                val dummy = SQLiteContact("", "", "", "", false)
-                val extraElements = mutableListOf(dummy, dummy, dummy)
-                extraElements.addAll(contacts)
-                adapter.submitList(extraElements)
+        appUserContacts.observe(viewLifecycleOwner) { appUserContacts ->
+            appUserContacts?.let {
+                nonAppUserContacts.observe(viewLifecycleOwner) { nonAppUserContacts ->
+                    nonAppUserContacts?.let {
+                        val adapter = SectionedContactAdapter(
+                            appUserContacts, nonAppUserContacts
+                        )
+                        binding.contactRecyclerview.adapter = adapter
+                    }
+                }
             }
         }
 
@@ -119,19 +134,7 @@ class ContactsOnAppFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.addPhoneContact.setOnClickListener {
-            // First check for permission
-            val permission = Manifest.permission.READ_CONTACTS
-            if (ContextCompat.checkSelfPermission(requireContext(), permission)
-                == PackageManager.PERMISSION_GRANTED
-            ) {
-                // Contact reading permission has been granted
-                pickContact.launch(null)
-            } else {
-                // Request permission for reading contact
-                requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-            }
-        }
+
     }
 
     private val requestPermissionLauncher =

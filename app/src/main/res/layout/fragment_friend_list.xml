@@ -21,8 +21,8 @@
             android:fitsSystemWindows="true"
             android:minHeight="70dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
-
             <include layout="@layout/friend_list_app_bar"/>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
@@ -32,7 +32,7 @@
                 android:paddingStart="7dp"
                 android:paddingEnd="7dp"
                 android:paddingTop="30dp"
-                app:layout_collapseMode="none">
+                app:layout_collapseMode="none" >
 
             </androidx.recyclerview.widget.RecyclerView>
         </com.google.android.material.appbar.CollapsingToolbarLayout>

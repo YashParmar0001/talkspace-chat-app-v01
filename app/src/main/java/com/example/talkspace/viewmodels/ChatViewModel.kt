@@ -54,6 +54,14 @@ class ChatViewModel(
         return contactsRepository.getContacts()
     }
 
+    fun getAppUserContacts(): LiveData<List<SQLiteContact>> {
+        return contactsRepository.getAppUserContacts()
+    }
+
+    fun getNonAppUserContacts(): LiveData<List<SQLiteContact>> {
+        return contactsRepository.getNonAppUserContacts()
+    }
+
     fun addChat(chat: SQLChat) {
         chatRepository.addChat(chat, viewModelScope)
     }
