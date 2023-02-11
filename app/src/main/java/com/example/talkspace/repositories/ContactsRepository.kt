@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import com.example.talkspace.model.FirebaseContact
 import com.example.talkspace.model.SQLiteContact
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
@@ -55,12 +56,13 @@ class ContactsRepository(
                         for (dc in snapshot.documentChanges) {
                             when (dc.type) {
                                 DocumentChange.Type.ADDED -> {
+                                    Log.d("UpdateContact", "Contact added to server")
                                     val contactData = dc.document.data
                                     val contact = FirebaseContact(
                                         contactData["contactId"].toString(),
                                         contactData["contactName"].toString(),
                                         contactData["contactAbout"].toString(),
-                                        "",
+                                        "", // TODO: Photo update
                                         contactData["appUser"].toString().toBoolean()
                                     )
 
@@ -71,6 +73,7 @@ class ContactsRepository(
 
                                 }
                                 DocumentChange.Type.MODIFIED -> {
+                                    Log.d("UpdateContact", "Contact modified on server")
                                     val contactData = dc.document.data
                                     val contact = FirebaseContact(
                                         contactData["contactId"].toString(),
@@ -84,6 +87,24 @@ class ContactsRepository(
                                         contactsDao.insert(contact.toSQLObject())
                                         Log.d("Contact", "Contact updated: ${contact.contactName}")
                                     }
+
+                                    // Update respective chat if exists
+                                    if (contact.isAppUser) {
+                                        val updates = mapOf(
+                                            "friendAbout" to contact.contactAbout,
+                                            "friendName" to contact.contactName,
+                                            "friendPhotoUrl" to contact.contactPhotoUrl
+                                        )
+                                        firestore.collection("users")
+                                            .document(currentUser?.phoneNumber.toString())
+                                            .collection("friends")
+                                            .document(contact.contactPhoneNumber)
+                                            .update(updates).addOnSuccessListener {
+                                                Log.d("ChatUpdates", "Chat updated: $updates")
+                                            }.addOnFailureListener {
+                                                Log.d("ChatUpdates", "Failed to update chat: $updates")
+                                            }
+                                    }
                                 }
                                 DocumentChange.Type.REMOVED -> {
                                     val contactData = dc.document.data
@@ -92,7 +113,7 @@ class ContactsRepository(
                                         contactData["contactName"].toString(),
                                         "",
                                         "",
-                                        true
+                                        false
                                     )
                                     coroutineScope.launch(Dispatchers.IO) {
                                         contactsDao.delete(contact.toSQLObject())
@@ -115,10 +136,16 @@ class ContactsRepository(
         registration = null
     }
 
-    fun syncContacts(firestore: FirebaseFirestore, contentResolver: ContentResolver) {
+    fun syncContacts(
+        firestore: FirebaseFirestore,
+        contentResolver: ContentResolver,
+        isFirstTimeLogin: Boolean
+    ) {
         Log.d("Contact", "Syncing contacts...")
         val deviceContacts = getDeviceContacts(contentResolver)
         val serverContacts = mutableListOf<SQLiteContact>()
+
+        var remainingContacts = deviceContacts.size
 
         firestore.collection("users")
             .document(currentUser?.phoneNumber.toString())
@@ -137,10 +164,10 @@ class ContactsRepository(
                 }
 
                 for (contact in deviceContacts) {
-                    val serverContact = serverContacts.find { contact.contactId == it.contactId }
+                    val serverContact = serverContacts.find { contact.contactPhoneNumber == it.contactPhoneNumber }
                     // Check if contact uses the app or not
                     firestore.collection("users")
-                        .document(contact.contactId)
+                        .document(contact.contactPhoneNumber)
                         .get().addOnSuccessListener { contactSnapshot ->
                             if (contactSnapshot.exists()) {
                                 contact.isAppUser = true
@@ -149,10 +176,44 @@ class ContactsRepository(
                             Log.d("Contact", "${contact.contactName} : ${contact.isAppUser}")
                             if (serverContact != null) {
                                 if (areDifferent(contact, serverContact)) {
-                                    updateContactOnServer(contact, firestore)
+                                    updateContactOnServer(contact, firestore).addOnSuccessListener {
+                                        Log.d("Contact", "Contact updated on server: ${contact.contactName}")
+                                        remainingContacts--
+
+                                        // If all contacts update is done then notify
+                                        if (isFirstTimeLogin) {
+                                            if (remainingContacts == 0) {
+                                                Log.d("NotifyContact", "First time login")
+                                                notifyAppUserContacts()
+                                            }
+                                        }
+                                    }.addOnFailureListener {
+                                        Log.d("Contact", "Failed to update contact on server", it)
+                                    }
+                                }else {
+                                    remainingContacts--
+                                    // If all contacts update is done then notify
+                                    if (isFirstTimeLogin) {
+                                        if (remainingContacts == 0) {
+                                            Log.d("NotifyContact", "First time login")
+                                            notifyAppUserContacts()
+                                        }
+                                    }
                                 }
                             } else {
-                                addContactToServer(contact, firestore)
+                                addContactToServer(contact, firestore).addOnSuccessListener {
+                                    Log.d("Contact", "Contact added on server: ${contact.contactName}")
+                                    remainingContacts--
+                                    // If all contacts update is done then notify
+                                    if (isFirstTimeLogin) {
+                                        if (remainingContacts == 0) {
+                                            Log.d("NotifyContact", "First time login")
+                                            notifyAppUserContacts()
+                                        }
+                                    }
+                                }.addOnFailureListener {
+                                    Log.d("Contact", "Failed to add contact on server", it)
+                                }
                             }
                         }.addOnFailureListener {
                             Log.d("Contact", "Failed to get contact info from server")
@@ -160,7 +221,7 @@ class ContactsRepository(
                 }
 
                 for (contact in serverContacts) {
-                    if (!deviceContacts.any { it.contactId == contact.contactId }) {
+                    if (!deviceContacts.any { it.contactPhoneNumber == contact.contactPhoneNumber }) {
                         deleteContactOnServer(contact, firestore)
                     }
                 }
@@ -175,19 +236,15 @@ class ContactsRepository(
                 || contact1.contactAbout != contact2.contactAbout
     }
 
-    private fun addContactToServer(contact: SQLiteContact, firestore: FirebaseFirestore) {
-        firestore.collection("users")
+    private fun addContactToServer(contact: SQLiteContact, firestore: FirebaseFirestore): Task<Void> {
+        return firestore.collection("users")
             .document(com.example.talkspace.ui.currentUser?.phoneNumber.toString())
             .collection("contacts")
-            .document(contact.contactId)
-            .set(contact).addOnSuccessListener {
-                Log.d("Contact", "Contact added on server: ${contact.contactName}")
-            }.addOnFailureListener {
-                Log.d("Contact", "Failed to add contact on server", it)
-            }
+            .document(contact.contactPhoneNumber)
+            .set(contact)
     }
 
-    private fun updateContactOnServer(contact: SQLiteContact, firestore: FirebaseFirestore) {
+    private fun updateContactOnServer(contact: SQLiteContact, firestore: FirebaseFirestore): Task<Void> {
         Log.d("UpdateContact", "Updating contact: ${contact.contactName} to ${contact.isAppUser}")
         val updates = mapOf(
             "contactName" to contact.contactName,
@@ -195,22 +252,18 @@ class ContactsRepository(
             "contactAbout" to contact.contactAbout
         )
 
-        firestore.collection("users")
+        return firestore.collection("users")
             .document(com.example.talkspace.ui.currentUser?.phoneNumber.toString())
             .collection("contacts")
-            .document(contact.contactId)
-            .update(updates).addOnSuccessListener {
-                Log.d("Contact", "Contact updated on server: ${contact.contactName}")
-            }.addOnFailureListener {
-                Log.d("Contact", "Failed to update contact on server", it)
-            }
+            .document(contact.contactPhoneNumber)
+            .update(updates)
     }
 
     private fun deleteContactOnServer(contact: SQLiteContact, firestore: FirebaseFirestore) {
         firestore.collection("users")
             .document(com.example.talkspace.ui.currentUser?.phoneNumber.toString())
             .collection("contacts")
-            .document(contact.contactId)
+            .document(contact.contactPhoneNumber)
             .delete().addOnSuccessListener {
                 Log.d("Contact", "Contact deleted from server successfully: ${contact.contactName}")
             }.addOnFailureListener {
@@ -284,5 +337,34 @@ class ContactsRepository(
             phoneNumber = "+91$phoneNumber"
         }
         return phoneNumber
+    }
+
+    private fun notifyAppUserContacts() {
+        Log.d("NotifyContact", "Notifying contacts...")
+        firestore.collection("users")
+            .document(currentUser?.phoneNumber.toString())
+            .collection("contacts")
+            .whereEqualTo("appUser", true)
+            .get().addOnSuccessListener { snapshot ->
+                for (dc in snapshot.documents) {
+                    val data = dc.data
+                    val phoneNumber = data?.get("contactPhoneNumber").toString()
+                    Log.d("Contact", "update to contact: ${data?.get("contactName")?.toString()}")
+                    firestore.collection("users")
+                        .document(phoneNumber)
+                        .collection("contacts")
+                        .document(currentUser?.phoneNumber.toString())
+                        .update("appUser", true)
+                        .addOnSuccessListener {
+                            Log.d("Contact", "Updated to contact")
+                        }.addOnFailureListener {
+                            Log.d("Contact", "Failed to update to contact", it)
+                        }
+                }
+            }.addOnFailureListener {
+                Log.d("Contact", "Failed to notify users", it)
+            }
+
+        // Todo: Send notification to contacts
     }
 }

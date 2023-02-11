@@ -12,8 +12,11 @@ interface ChatDao {
     @Query("SELECT * FROM chats ORDER BY lastTimeStamp DESC")
     fun getChats(): Flow<List<SQLChat>>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(chat: SQLChat)
+
+    @Query("DELETE FROM chats WHERE phoneNumber=:phoneNumber")
+    suspend fun delete(phoneNumber: String)
 
 //    @Query("SELECT * FROM chats WHERE phoneNumber=:phoneNumber")
 //    fun getChat(phoneNumber: String): SQLChat

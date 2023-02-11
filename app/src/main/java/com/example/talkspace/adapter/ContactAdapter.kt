@@ -71,7 +71,7 @@ class ContactAdapter(val context: Context) :
     inner class ContactViewHolder(private val binding: ContactViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: SQLiteContact) {
-            if (item.contactId == "") {
+            if (item.contactPhoneNumber == "") {
                 binding.contactName.text = item.contactName
                 binding.contactAbout.text = ""
                 when (item.contactName) {
@@ -129,7 +129,7 @@ class ContactAdapter(val context: Context) :
         }
 
         override fun areContentsTheSame(oldItem: SQLiteContact, newItem: SQLiteContact): Boolean {
-            return oldItem.contactId == newItem.contactId
+            return oldItem.contactPhoneNumber == newItem.contactPhoneNumber
         }
 
     }

@@ -45,6 +45,9 @@ class MainActivity : AppCompatActivity() {
 
     private val firestore = FirebaseFirestore.getInstance()
 
+    private lateinit var preferences: SharedPreferences
+    private var isFirstTimeLogin: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Firebase.auth.currentUser == null){
@@ -59,13 +62,20 @@ class MainActivity : AppCompatActivity() {
 
             navController = navHostFragment.navController
 
+            preferences = getSharedPreferences("contactPrefs", MODE_PRIVATE)
+            isFirstTimeLogin = preferences.getBoolean("firstTime", true)
+
+            // Todo: Set user state as "Online"
+
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
                 == PackageManager.PERMISSION_GRANTED) {
                 // Registering contacts change observer
-                chatViewModel.syncContacts(firestore, contentResolver)
                 lifecycleScope.launch(Dispatchers.IO) {
-                    chatViewModel.syncContacts(firestore, contentResolver)
+                    chatViewModel.syncContacts(firestore, contentResolver, isFirstTimeLogin)
                 }
+                changeFirstTime()
+                chatViewModel.startListeningForChats(this)
+                chatViewModel.startListeningForContacts()
                 registerContactsChangeObserver()
             }else {
                 val requestPermissionLauncher =
@@ -76,8 +86,11 @@ class MainActivity : AppCompatActivity() {
                             Log.i("Permission: ", "Granted")
                             // Register contacts change observer
                             lifecycleScope.launch(Dispatchers.IO) {
-                                chatViewModel.syncContacts(firestore, contentResolver)
+                                chatViewModel.syncContacts(firestore, contentResolver, isFirstTimeLogin)
                             }
+                            changeFirstTime()
+                            chatViewModel.startListeningForChats(this)
+                            chatViewModel.startListeningForContacts()
                             registerContactsChangeObserver()
                         } else {
                             Log.i("Permission: ", "Denied")
@@ -109,16 +122,28 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
         chatViewModel.startListeningForContacts()
     }
 
     override fun onStop() {
         super.onStop()
-        chatViewModel.stopListeningForChats()
+//        chatViewModel.stopListeningForChats()
 //        chatViewModel.stopListeningForContacts()
     }
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    private fun changeFirstTime() {
+        if (isFirstTimeLogin) {
+            Log.d("NotifyContact", "First time sign in")
+            val editor: SharedPreferences.Editor = preferences.edit()
+            editor.putBoolean("firstTime", false)
+            editor.apply()
+        }else {
+            Log.d("NotifyContact", "Not first time sign in")
+        }
     }
 }

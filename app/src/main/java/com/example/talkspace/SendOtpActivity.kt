@@ -1,19 +1,15 @@
 package com.example.talkspace
 
 import android.content.Intent
-import android.nfc.Tag
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
-import androidx.core.widget.addTextChangedListener
 import com.example.talkspace.databinding.ActivitySendOtpBinding
-import com.example.talkspace.databinding.ActivitySignInBinding
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
 import java.util.concurrent.TimeUnit
@@ -63,7 +59,7 @@ class SendOtpActivity : AppCompatActivity() {
         setUpOtpInputs()
 
         binding.verifyBtn.setOnClickListener{
-            isCodeVelid()
+            isCodeValid()
             Log.d("SendOtpActivity","Resend send OTP verify : $verificationId")
             if(verificationId.isNotEmpty()){
                 binding.progressBarVerifyOtp.visibility = View.VISIBLE
@@ -81,7 +77,7 @@ class SendOtpActivity : AppCompatActivity() {
         }
     }
 
-    private fun isCodeVelid(){
+    private fun isCodeValid(){
         if(otpNumber1.text.toString().trim { it <= ' '}.isNotEmpty()
             && otpNumber2.text.toString().trim { it <= ' ' }.isNotEmpty()
             && otpNumber3.text.toString().trim { it <= ' ' }.isNotEmpty()
@@ -162,7 +158,7 @@ class SendOtpActivity : AppCompatActivity() {
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 if (p0.toString().trim{it <= ' '}.isNotEmpty()) {
                     otpNumber2.requestFocus()
-                    if(binding.verifyBtn.isEnabled == false){
+                    if(!binding.verifyBtn.isEnabled){
                         binding.verifyBtn.isEnabled = true
                     }
                 }else{
@@ -192,7 +188,7 @@ class SendOtpActivity : AppCompatActivity() {
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 if (p0.toString().trim{it <= ' '}.isNotEmpty()){
                     otpNumber4.requestFocus()
-                    if(binding.verifyBtn.isEnabled == false){
+                    if(!binding.verifyBtn.isEnabled){
                         binding.verifyBtn.isEnabled = true
                     }
                 }else{
@@ -207,7 +203,7 @@ class SendOtpActivity : AppCompatActivity() {
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 if (p0.toString().trim{it <= ' '}.isNotEmpty()){
                     otpNumber5.requestFocus()
-                    if(binding.verifyBtn.isEnabled == false){
+                    if(!binding.verifyBtn.isEnabled){
                         binding.verifyBtn.isEnabled = true
                     }
                 }else{
@@ -222,7 +218,7 @@ class SendOtpActivity : AppCompatActivity() {
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 if (p0.toString().trim{it <= ' '}.isNotEmpty()){
                     otpNumber6.requestFocus()
-                    if(binding.verifyBtn.isEnabled == false){
+                    if(!binding.verifyBtn.isEnabled){
                         binding.verifyBtn.isEnabled = true
                     }
                 }else{

@@ -29,6 +29,12 @@ class ChatViewModel(
     private val _currentFriendAbout = MutableLiveData<String>()
     val currentFriendAbout : LiveData<String> = _currentFriendAbout
 
+    private val _appUserContacts = contactsRepository.getAppUserContacts()
+    val appUserContacts: LiveData<List<SQLiteContact>> = _appUserContacts
+
+    private val _nonAppUserContacts = contactsRepository.getNonAppUserContacts()
+    val nonAppUserContacts: LiveData<List<SQLiteContact>> = _nonAppUserContacts
+
     fun sendMessage(message: FirebaseMessage) {
         chatRepository.sendMessage(currentFriendId.value.toString(), message, viewModelScope)
     }
@@ -46,6 +52,10 @@ class ChatViewModel(
         _currentFriendAbout.value = friendAbout
     }
 
+    fun getCurrentFriendName(): String? {
+        return currentFriendName.value
+    }
+
     fun getMessages(friendId: String): LiveData<List<SQLiteMessage>> {
         return chatRepository.getMessages(friendId)
     }
@@ -54,13 +64,13 @@ class ChatViewModel(
         return contactsRepository.getContacts()
     }
 
-    fun getAppUserContacts(): LiveData<List<SQLiteContact>> {
-        return contactsRepository.getAppUserContacts()
-    }
+//    fun getAppUserContacts(): LiveData<List<SQLiteContact>> {
+//        return contactsRepository.getAppUserContacts()
+//    }
 
-    fun getNonAppUserContacts(): LiveData<List<SQLiteContact>> {
-        return contactsRepository.getNonAppUserContacts()
-    }
+//    fun getNonAppUserContacts(): LiveData<List<SQLiteContact>> {
+//        return contactsRepository.getNonAppUserContacts()
+//    }
 
     fun addChat(chat: SQLChat) {
         chatRepository.addChat(chat, viewModelScope)
@@ -94,8 +104,12 @@ class ChatViewModel(
         contactsRepository.stopListeningForContacts()
     }
 
-    fun syncContacts(firestore: FirebaseFirestore, contentResolver: ContentResolver) {
-        contactsRepository.syncContacts(firestore, contentResolver)
+    fun syncContacts(
+        firestore: FirebaseFirestore,
+        contentResolver: ContentResolver,
+        isFirstTimeLogin: Boolean
+    ) {
+        contactsRepository.syncContacts(firestore, contentResolver, isFirstTimeLogin)
     }
 }
 

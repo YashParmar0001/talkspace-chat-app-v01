@@ -115,7 +115,7 @@ class ChatFragment : Fragment() {
         val senderId = currentUser?.phoneNumber.toString()
         val receiverId = currentFriendId
         val imageUrl = ""
-        val status = MessageState.SENT
+        val status = MessageState.SENDING
 
         // Delete from textEditView
         binding.massageInputText.setText("")

@@ -5,13 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="10dp"
+    android:padding="5dp"
     android:id="@+id/contacts_view">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/contact_photo"
         android:layout_width="45dp"
         android:layout_height="45dp"
+        android:padding="4dp"
+        android:layout_marginStart="10dp"
         android:scaleType="centerCrop"
         android:src="@drawable/profile_photo"
         app:layout_constraintTop_toTopOf="parent"
@@ -27,7 +29,7 @@
         tools:text="Yash Parmar"
         android:textStyle="bold"
         android:layout_marginStart="10dp"
-        android:textSize="20sp"
+        android:textSize="16sp"
         android:textColor="@color/black"
         app:layout_constraintTop_toTopOf="@+id/contact_photo"
         app:layout_constraintBottom_toTopOf="@+id/contact_about"

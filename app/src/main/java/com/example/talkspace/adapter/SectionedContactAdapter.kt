@@ -3,19 +3,20 @@ package com.example.talkspace.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.example.talkspace.R
-import com.example.talkspace.databinding.ContactViewBinding
 import com.example.talkspace.databinding.ContactViewNoUserBinding
 import com.example.talkspace.databinding.ContactViewUserBinding
 import com.example.talkspace.databinding.SectionViewBinding
 import com.example.talkspace.model.SQLiteContact
+import com.example.talkspace.viewmodels.ChatViewModel
 
 class SectionedContactAdapter(
     private val usersList: List<SQLiteContact>,
-    private val nonUsersList: List<SQLiteContact>
+    private val nonUsersList: List<SQLiteContact>,
+    private val chatViewModel: ChatViewModel
 ): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -62,14 +63,20 @@ class SectionedContactAdapter(
         when (holder) {
             is SectionViewHolder -> {
                 if (position == 0) {
-                    holder.bind("Users")
+                    holder.bind("Contacts on TalkSpace", usersList.size)
                 }else {
-                    holder.bind("Non users")
+                    holder.bind("Other contacts", nonUsersList.size)
                 }
             }
             is UserViewHolder -> {
                 val item = usersList[position - 1]
                 holder.bind(item)
+                holder.itemView.setOnClickListener {
+                    chatViewModel.setCurrentFriendId(item.contactPhoneNumber)
+                    chatViewModel.setCurrentFriendName(item.contactName)
+                    chatViewModel.setCurrentFriendAbout(item.contactAbout)
+                    it.findNavController().navigate(R.id.action_contactsOnApp_to_chatFragment)
+                }
             }
             is NonUserViewHolder -> {
                 val item = nonUsersList[position - usersList.size - 2]
@@ -89,8 +96,9 @@ class SectionedContactAdapter(
 
     inner class SectionViewHolder(private val binding: SectionViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(title: String) {
+        fun bind(title: String, count: Int) {
             binding.sectionTitle.text = title
+            binding.count.text = count.toString()
         }
     }
 

@@ -46,51 +46,51 @@ class ContactsOnAppFragment : Fragment() {
         )
     }
 
-    private val pickContact =
-        registerForActivityResult(ActivityResultContracts.PickContact()) { uri ->
-            Log.d("PickContact", "Contact: $uri")
-            if (uri == null) {
-                return@registerForActivityResult
-            }
-
-            val contentResolver = requireContext().contentResolver
-
-            // For getting contact name
-            val contactCursor = contentResolver.query(uri, null, null, null, null)
-            val nameIndex =
-                contactCursor?.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
-            contactCursor?.moveToFirst()
-            val contactName = nameIndex?.let { contactCursor.getString(it) }
-            Log.d("PickContact", "Contact name: $contactName")
-
-            // For getting phone number
-            val phoneCursor = contentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                null,
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                arrayOf(uri.lastPathSegment),
-                null
-            )
-            var phoneNumber = ""
-            if (phoneCursor != null && phoneCursor.moveToFirst()) {
-                val index =
-                    phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                if (index >= 0) phoneNumber = phoneCursor.getString(index)
-            }
-
-            // Process phone number
-            phoneNumber = phoneNumber.replace(" ", "")
-            Log.d("PickContact", "Phone number after trim: $phoneNumber")
-            val length = phoneNumber.length
-            if (length != 10) {
-                phoneNumber = phoneNumber.substring(3, length)
-            }
-            Log.d("PickContact", "Contact number: $phoneNumber")
-            contactCursor?.close()
-
-            // Checking if contact is present in Firebase
-            checkUserAndGoToChat("+91$phoneNumber", contactName.toString())
-        }
+//    private val pickContact =
+//        registerForActivityResult(ActivityResultContracts.PickContact()) { uri ->
+//            Log.d("PickContact", "Contact: $uri")
+//            if (uri == null) {
+//                return@registerForActivityResult
+//            }
+//
+//            val contentResolver = requireContext().contentResolver
+//
+//            // For getting contact name
+//            val contactCursor = contentResolver.query(uri, null, null, null, null)
+//            val nameIndex =
+//                contactCursor?.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
+//            contactCursor?.moveToFirst()
+//            val contactName = nameIndex?.let { contactCursor.getString(it) }
+//            Log.d("PickContact", "Contact name: $contactName")
+//
+//            // For getting phone number
+//            val phoneCursor = contentResolver.query(
+//                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+//                null,
+//                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+//                arrayOf(uri.lastPathSegment),
+//                null
+//            )
+//            var phoneNumber = ""
+//            if (phoneCursor != null && phoneCursor.moveToFirst()) {
+//                val index =
+//                    phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+//                if (index >= 0) phoneNumber = phoneCursor.getString(index)
+//            }
+//
+//            // Process phone number
+//            phoneNumber = phoneNumber.replace(" ", "")
+//            Log.d("PickContact", "Phone number after trim: $phoneNumber")
+//            val length = phoneNumber.length
+//            if (length != 10) {
+//                phoneNumber = phoneNumber.substring(3, length)
+//            }
+//            Log.d("PickContact", "Contact number: $phoneNumber")
+//            contactCursor?.close()
+//
+//            // Checking if contact is present in Firebase
+//            checkUserAndGoToChat("+91$phoneNumber", contactName.toString())
+//        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -99,29 +99,20 @@ class ContactsOnAppFragment : Fragment() {
         binding = FragmentContactsOnAppBinding.inflate(inflater, container, false)
 
         contacts = chatViewModel.getContacts()
-        appUserContacts = chatViewModel.getAppUserContacts()
-        nonAppUserContacts = chatViewModel.getNonAppUserContacts()
+        appUserContacts = chatViewModel.appUserContacts
+        nonAppUserContacts = chatViewModel.nonAppUserContacts
 
         val layoutManager =
             LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.contactRecyclerview.layoutManager = layoutManager
 
-//        contacts.observe(viewLifecycleOwner) { contacts ->
-//            contacts?.let {
-//                val adapter = SectionedContactAdapter(
-//                    contacts, contacts
-//                )
-//                binding.contactRecyclerview.adapter = adapter
-//            }
-//        }
-
         appUserContacts.observe(viewLifecycleOwner) { appUserContacts ->
             appUserContacts?.let {
                 nonAppUserContacts.observe(viewLifecycleOwner) { nonAppUserContacts ->
                     nonAppUserContacts?.let {
                         val adapter = SectionedContactAdapter(
-                            appUserContacts, nonAppUserContacts
+                            appUserContacts, nonAppUserContacts, chatViewModel
                         )
                         binding.contactRecyclerview.adapter = adapter
                     }
@@ -143,7 +134,7 @@ class ContactsOnAppFragment : Fragment() {
         ) { isGranted: Boolean ->
             if (isGranted) {
                 Log.i("Permission: ", "Granted")
-                pickContact.launch(null)
+//                pickContact.launch(null)
             } else {
                 Log.i("Permission: ", "Denied")
                 view?.let {

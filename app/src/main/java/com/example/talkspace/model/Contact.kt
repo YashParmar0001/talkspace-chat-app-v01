@@ -1,12 +1,11 @@
 package com.example.talkspace.model
 
-import android.view.ViewDebug.CapturedViewProperty
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 data class FirebaseContact(
-    val contactId: String,
+    val contactPhoneNumber: String,
     val contactName: String,
     val contactAbout: String,
     val contactPhotoUrl: String,
@@ -14,7 +13,7 @@ data class FirebaseContact(
 ) {
     fun toSQLObject(): SQLiteContact {
         return SQLiteContact(
-            contactId = contactId,
+            contactPhoneNumber = contactPhoneNumber,
             contactName = contactName,
             contactAbout = contactAbout,
             contactPhotoUrl = contactPhotoUrl,
@@ -25,7 +24,7 @@ data class FirebaseContact(
 
 @Entity(tableName = "contacts")
 data class SQLiteContact(
-    @PrimaryKey val contactId: String,
+    @PrimaryKey val contactPhoneNumber: String,
     @ColumnInfo(name = "contactName") var contactName: String,
     @ColumnInfo(name = "contactAbout") var contactAbout: String,
     @ColumnInfo(name = "contactPhotoUrl") val contactPhotoUrl: String,
@@ -33,7 +32,7 @@ data class SQLiteContact(
 ) {
     fun toFirebaseObject(): FirebaseContact {
         return FirebaseContact(
-            contactId = contactId,
+            contactPhoneNumber = contactPhoneNumber,
             contactName = contactName,
             contactAbout = contactAbout,
             contactPhotoUrl = contactPhotoUrl,

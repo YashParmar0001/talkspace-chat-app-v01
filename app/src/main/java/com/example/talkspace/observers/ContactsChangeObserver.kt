@@ -20,7 +20,7 @@ class ContactsChangeObserver(
         super.onChange(selfChange)
         coroutineScope.launch(Dispatchers.IO) {
             Log.d("Contact", "Syncing contacts...")
-            chatViewModel.syncContacts(FirebaseFirestore.getInstance(), contentResolver)
+            chatViewModel.syncContacts(FirebaseFirestore.getInstance(), contentResolver, false)
             Log.d("Contact", "Contact synced successfully")
         }
     }
