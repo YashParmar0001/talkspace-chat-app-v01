@@ -88,8 +88,8 @@ class ChatViewModel(
         chatRepository.stopListeningForMessages()
     }
 
-    fun startListeningForChats(context: Context) {
-        chatRepository.startListeningForChats(viewModelScope, context)
+    fun startListeningForChats() {
+        chatRepository.startListeningForChats(viewModelScope, appUserContacts)
     }
 
     fun stopListeningForChats() {

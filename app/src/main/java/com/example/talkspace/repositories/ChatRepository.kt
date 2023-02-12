@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import com.example.talkspace.model.*
@@ -126,7 +127,7 @@ class ChatRepository(
         messageRegistration = null
     }
 
-    fun startListeningForChats(coroutineScope: CoroutineScope, context: Context) {
+    fun startListeningForChats(coroutineScope: CoroutineScope, contacts: LiveData<List<SQLiteContact>>) {
         Log.d("Chats", "Starting listener for chats...")
         chatRegistration = firestore.collection("users")
             .document(currentUser?.phoneNumber.toString())
@@ -155,14 +156,37 @@ class ChatRepository(
                                         data["lastTimeStamp"].toString().toLong(),
                                         0
                                     )
-                                    Log.d("Chat", "Remaining: " +
-                                            data["remainingMessages"].toString()
-                                    )
+
+//                                    val contact = contacts.value?.find {
+//                                        it.contactPhoneNumber == chat.phoneNumber
+//                                    }
 
                                     coroutineScope.launch(Dispatchers.IO) {
-                                        Log.d("UpdateChat", "Adding chat: ${chat.friendName}")
-                                        chatDao.insert(chat.toSQLObject())
+                                        val contact = chatDao.checkContact(chat.phoneNumber)
+                                        Log.d("ContactData", "List: $contacts")
+                                        Log.d("ContactData", "Chat data: $contact")
+
+                                        if (contact != null) {
+                                            firestore.collection("users")
+                                                .document(currentUser?.phoneNumber.toString())
+                                                .collection("friends")
+                                                .document(chat.phoneNumber)
+                                                .update("friendName", contact.contactName)
+                                                .addOnSuccessListener {
+                                                    Log.d("ChatUpdate", "Chat name updated: ${contact.contactName}")
+                                                }.addOnFailureListener {
+                                                    Log.d("ChatUpdate", "Failed to update chat: ${contact.contactName}")
+                                                }
+                                        }else {
+                                            coroutineScope.launch(Dispatchers.IO) {
+                                                Log.d("UpdateChat", "Adding chat: ${chat.friendName}")
+                                                chatDao.insert(chat.toSQLObject())
+                                            }
+                                        }
                                     }
+
+//                                    Log.d("ContactData", "List: $contacts")
+//                                    Log.d("ContactData", "Chat data: $contact")
                                 }
                                 DocumentChange.Type.MODIFIED -> {
                                     val data = dc.document.data

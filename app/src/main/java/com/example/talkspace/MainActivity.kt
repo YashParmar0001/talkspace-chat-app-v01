@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
                     chatViewModel.syncContacts(firestore, contentResolver, isFirstTimeLogin)
                 }
                 changeFirstTime()
-                chatViewModel.startListeningForChats(this)
+                chatViewModel.startListeningForChats()
                 chatViewModel.startListeningForContacts()
                 registerContactsChangeObserver()
             }else {
@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
                                 chatViewModel.syncContacts(firestore, contentResolver, isFirstTimeLogin)
                             }
                             changeFirstTime()
-                            chatViewModel.startListeningForChats(this)
+                            chatViewModel.startListeningForChats()
                             chatViewModel.startListeningForContacts()
                             registerContactsChangeObserver()
                         } else {

@@ -59,7 +59,7 @@ class ContactsRepository(
                                     Log.d("UpdateContact", "Contact added to server")
                                     val contactData = dc.document.data
                                     val contact = FirebaseContact(
-                                        contactData["contactId"].toString(),
+                                        contactData["contactPhoneNumber"].toString(),
                                         contactData["contactName"].toString(),
                                         contactData["contactAbout"].toString(),
                                         "", // TODO: Photo update
@@ -68,7 +68,7 @@ class ContactsRepository(
 
                                     coroutineScope.launch(Dispatchers.IO) {
                                         contactsDao.insert(contact.toSQLObject())
-                                        Log.d("Contact", "Contact inserted: ${contact.contactName}")
+                                        Log.d("OfflineContact", "Contact inserted: ${contact.contactName}")
                                     }
 
                                 }
@@ -76,7 +76,7 @@ class ContactsRepository(
                                     Log.d("UpdateContact", "Contact modified on server")
                                     val contactData = dc.document.data
                                     val contact = FirebaseContact(
-                                        contactData["contactId"].toString(),
+                                        contactData["contactPhoneNumber"].toString(),
                                         contactData["contactName"].toString(),
                                         contactData["contactAbout"].toString(),
                                         "",
@@ -85,7 +85,7 @@ class ContactsRepository(
 
                                     coroutineScope.launch(Dispatchers.IO) {
                                         contactsDao.insert(contact.toSQLObject())
-                                        Log.d("Contact", "Contact updated: ${contact.contactName}")
+                                        Log.d("OfflineContact", "Contact updated: ${contact.contactName}")
                                     }
 
                                     // Update respective chat if exists
@@ -109,7 +109,7 @@ class ContactsRepository(
                                 DocumentChange.Type.REMOVED -> {
                                     val contactData = dc.document.data
                                     val contact = FirebaseContact(
-                                        contactData["contactId"].toString(),
+                                        contactData["contactPhoneNumber"].toString(),
                                         contactData["contactName"].toString(),
                                         "",
                                         "",
