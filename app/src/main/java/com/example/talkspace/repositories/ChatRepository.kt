@@ -178,10 +178,8 @@ class ChatRepository(
                                                     Log.d("ChatUpdate", "Failed to update chat: ${contact.contactName}")
                                                 }
                                         }else {
-                                            coroutineScope.launch(Dispatchers.IO) {
-                                                Log.d("UpdateChat", "Adding chat: ${chat.friendName}")
-                                                chatDao.insert(chat.toSQLObject())
-                                            }
+                                            Log.d("UpdateChat", "Adding chat: ${chat.friendName}")
+                                            chatDao.insert(chat.toSQLObject())
                                         }
                                     }
 
