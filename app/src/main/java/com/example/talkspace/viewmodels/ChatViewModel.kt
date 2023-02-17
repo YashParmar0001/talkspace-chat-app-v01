@@ -2,6 +2,7 @@ package com.example.talkspace.viewmodels
 
 import android.content.ContentResolver
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.talkspace.model.FirebaseMessage
 import com.example.talkspace.model.SQLChat
@@ -10,6 +11,7 @@ import com.example.talkspace.model.SQLiteMessage
 import com.example.talkspace.repositories.ChatRepository
 import com.example.talkspace.repositories.ContactsRepository
 import com.example.talkspace.ui.currentUser
+import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 
@@ -110,6 +112,15 @@ class ChatViewModel(
         isFirstTimeLogin: Boolean
     ) {
         contactsRepository.syncContacts(firestore, contentResolver, isFirstTimeLogin)
+    }
+
+    fun notifyUserState(status: String, context: Context) {
+        Log.d("UserState", "Notifying user state: $status")
+        contactsRepository.notifyAppUserContactsAboutStatus(status, context)
+    }
+
+    fun notifyUserState1(context: Context) {
+        contactsRepository.notifyAppUserContactsAboutStatus(context)
     }
 }
 

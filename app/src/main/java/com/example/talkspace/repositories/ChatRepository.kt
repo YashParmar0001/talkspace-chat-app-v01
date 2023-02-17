@@ -182,9 +182,6 @@ class ChatRepository(
                                             chatDao.insert(chat.toSQLObject())
                                         }
                                     }
-
-//                                    Log.d("ContactData", "List: $contacts")
-//                                    Log.d("ContactData", "Chat data: $contact")
                                 }
                                 DocumentChange.Type.MODIFIED -> {
                                     val data = dc.document.data

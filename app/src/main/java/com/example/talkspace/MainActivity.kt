@@ -28,6 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -66,6 +67,7 @@ class MainActivity : AppCompatActivity() {
             isFirstTimeLogin = preferences.getBoolean("firstTime", true)
 
             // Todo: Set user state as "Online"
+            chatViewModel.notifyUserState("Using app", this)
 
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -122,11 +124,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-
         chatViewModel.startListeningForContacts()
     }
 
+    override fun onPause() {
+        super.onPause()
+    }
+
     override fun onStop() {
+        chatViewModel.notifyUserState1(this)
         super.onStop()
 //        chatViewModel.stopListeningForChats()
 //        chatViewModel.stopListeningForContacts()
@@ -145,5 +151,9 @@ class MainActivity : AppCompatActivity() {
         }else {
             Log.d("NotifyContact", "Not first time sign in")
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 }

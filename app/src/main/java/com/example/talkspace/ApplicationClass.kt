@@ -25,5 +25,12 @@ class ApplicationClass: Application() {
         // Apply settings to the firebase
         val settings = FirebaseFirestoreSettings.Builder().setPersistenceEnabled(false).build()
         FirebaseFirestore.getInstance().firestoreSettings = settings
+
+//        contactRepository.notifyAppUserContactsAboutStatus("Using the app")
+    }
+
+    override fun onTerminate() {
+//        contactRepository.notifyAppUserContactsAboutStatus("Not using app")
+        super.onTerminate()
     }
 }

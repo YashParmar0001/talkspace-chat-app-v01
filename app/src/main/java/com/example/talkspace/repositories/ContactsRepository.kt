@@ -2,12 +2,17 @@ package com.example.talkspace.repositories
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
+import android.content.Context
 import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
+import androidx.work.*
+import com.example.talkspace.StatusWorker
 import com.example.talkspace.model.FirebaseContact
 import com.example.talkspace.model.SQLiteContact
+import com.example.talkspace.model.SQLiteContact.Companion.OFFLINE
+import com.example.talkspace.ui.currentUser
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
@@ -63,7 +68,8 @@ class ContactsRepository(
                                         contactData["contactName"].toString(),
                                         contactData["contactAbout"].toString(),
                                         "", // TODO: Photo update
-                                        contactData["appUser"].toString().toBoolean()
+                                        contactData["appUser"].toString().toBoolean(),
+                                        contactData["state"].toString()
                                     )
 
                                     coroutineScope.launch(Dispatchers.IO) {
@@ -80,7 +86,8 @@ class ContactsRepository(
                                         contactData["contactName"].toString(),
                                         contactData["contactAbout"].toString(),
                                         "",
-                                        contactData["appUser"].toString().toBoolean()
+                                        contactData["appUser"].toString().toBoolean(),
+                                        contactData["state"].toString()
                                     )
 
                                     coroutineScope.launch(Dispatchers.IO) {
@@ -113,10 +120,11 @@ class ContactsRepository(
                                         contactData["contactName"].toString(),
                                         "",
                                         "",
-                                        false
+                                        false,
+                                        OFFLINE
                                     )
                                     coroutineScope.launch(Dispatchers.IO) {
-                                        contactsDao.delete(contact.toSQLObject())
+                                        contactsDao.delete(contact.contactPhoneNumber)
                                         Log.d("Contact", "Contact deleted: ${contact.contactName}")
                                     }
                                 }
@@ -143,7 +151,7 @@ class ContactsRepository(
     ) {
         Log.d("Contact", "Syncing contacts...")
         val deviceContacts = getDeviceContacts(contentResolver)
-        val serverContacts = mutableListOf<SQLiteContact>()
+        val serverContacts = mutableListOf<FirebaseContact>()
 
         var remainingContacts = deviceContacts.size
 
@@ -160,7 +168,7 @@ class ContactsRepository(
                         data["contactPhotoUrl"].toString(),
                         data["appUser"].toString().toBoolean()
                     )
-                    serverContacts.add(contact)
+                    serverContacts.add(contact.toFirebaseObject())
                 }
 
                 for (contact in deviceContacts) {
@@ -176,7 +184,7 @@ class ContactsRepository(
                             Log.d("Contact", "${contact.contactName} : ${contact.isAppUser}")
                             if (serverContact != null) {
                                 if (areDifferent(contact, serverContact)) {
-                                    updateContactOnServer(contact, firestore).addOnSuccessListener {
+                                    updateContactOnServer(contact.toFirebaseObject(), firestore).addOnSuccessListener {
                                         Log.d("Contact", "Contact updated on server: ${contact.contactName}")
                                         remainingContacts--
 
@@ -184,7 +192,7 @@ class ContactsRepository(
                                         if (isFirstTimeLogin) {
                                             if (remainingContacts == 0) {
                                                 Log.d("NotifyContact", "First time login")
-                                                notifyAppUserContacts()
+                                                notifyAppUserContactsAboutUsingApp()
                                             }
                                         }
                                     }.addOnFailureListener {
@@ -196,19 +204,19 @@ class ContactsRepository(
                                     if (isFirstTimeLogin) {
                                         if (remainingContacts == 0) {
                                             Log.d("NotifyContact", "First time login")
-                                            notifyAppUserContacts()
+                                            notifyAppUserContactsAboutUsingApp()
                                         }
                                     }
                                 }
                             } else {
-                                addContactToServer(contact, firestore).addOnSuccessListener {
+                                addContactToServer(contact.toFirebaseObject(), firestore).addOnSuccessListener {
                                     Log.d("Contact", "Contact added on server: ${contact.contactName}")
                                     remainingContacts--
                                     // If all contacts update is done then notify
                                     if (isFirstTimeLogin) {
                                         if (remainingContacts == 0) {
                                             Log.d("NotifyContact", "First time login")
-                                            notifyAppUserContacts()
+                                            notifyAppUserContactsAboutUsingApp()
                                         }
                                     }
                                 }.addOnFailureListener {
@@ -230,13 +238,13 @@ class ContactsRepository(
             }
     }
 
-    private fun areDifferent(contact1: SQLiteContact, contact2: SQLiteContact): Boolean {
+    private fun areDifferent(contact1: SQLiteContact, contact2: FirebaseContact): Boolean {
         return contact1.contactName != contact2.contactName
                 || contact1.isAppUser != contact2.isAppUser
                 || contact1.contactAbout != contact2.contactAbout
     }
 
-    private fun addContactToServer(contact: SQLiteContact, firestore: FirebaseFirestore): Task<Void> {
+    private fun addContactToServer(contact: FirebaseContact, firestore: FirebaseFirestore): Task<Void> {
         return firestore.collection("users")
             .document(com.example.talkspace.ui.currentUser?.phoneNumber.toString())
             .collection("contacts")
@@ -244,7 +252,7 @@ class ContactsRepository(
             .set(contact)
     }
 
-    private fun updateContactOnServer(contact: SQLiteContact, firestore: FirebaseFirestore): Task<Void> {
+    private fun updateContactOnServer(contact: FirebaseContact, firestore: FirebaseFirestore): Task<Void> {
         Log.d("UpdateContact", "Updating contact: ${contact.contactName} to ${contact.isAppUser}")
         val updates = mapOf(
             "contactName" to contact.contactName,
@@ -259,7 +267,7 @@ class ContactsRepository(
             .update(updates)
     }
 
-    private fun deleteContactOnServer(contact: SQLiteContact, firestore: FirebaseFirestore) {
+    private fun deleteContactOnServer(contact: FirebaseContact, firestore: FirebaseFirestore) {
         firestore.collection("users")
             .document(com.example.talkspace.ui.currentUser?.phoneNumber.toString())
             .collection("contacts")
@@ -339,7 +347,7 @@ class ContactsRepository(
         return phoneNumber
     }
 
-    private fun notifyAppUserContacts() {
+    private fun notifyAppUserContactsAboutUsingApp() {
         Log.d("NotifyContact", "Notifying contacts...")
         firestore.collection("users")
             .document(currentUser?.phoneNumber.toString())
@@ -366,5 +374,84 @@ class ContactsRepository(
             }
 
         // Todo: Send notification to contacts
+    }
+
+    fun notifyAppUserContactsAboutStatus(status: String, context: Context) {
+        val workRequest = OneTimeWorkRequest.Builder(StatusWorker::class.java).build()
+        WorkManager.getInstance(context).enqueue(workRequest)
+    }
+
+    fun notifyAppUserContactsAboutStatus(context: Context) {
+        val workRequest = OneTimeWorkRequest.Builder(StatusWorker1::class.java).build()
+        WorkManager.getInstance(context).enqueue(workRequest)
+    }
+
+    class StatusWorker(
+        context: Context,
+        workerParams: WorkerParameters,
+    ): CoroutineWorker(context, workerParams) {
+        override suspend fun doWork(): Result {
+            Log.d("StatusWorker", "Worker is running")
+            FirebaseFirestore.getInstance().collection("users")
+                .document(currentUser?.phoneNumber.toString())
+                .collection("contacts")
+                .whereEqualTo("appUser", true)
+                .get().addOnSuccessListener {  snapshot ->
+                    for (dc in snapshot.documents) {
+                        val data = dc.data
+                        val phoneNumber = data?.get("contactPhoneNumber").toString()
+                        Log.d("UserState", "Notifying state to user: ${data?.get("contactName").toString()}")
+                        FirebaseFirestore.getInstance().collection("users")
+                            .document(phoneNumber)
+                            .collection("contacts")
+                            .document(currentUser?.phoneNumber.toString())
+                            .update("state", "Using app")
+                            .addOnSuccessListener {
+                                Log.d("UserState", "Notified to contact")
+                            }.addOnFailureListener {
+                                Log.d("UserState", "Failed to notify contact", it)
+                            }
+                    }
+                }.addOnFailureListener {
+                    Log.d("Contact", "Failed to notify to contacts", it)
+                }
+            return Result.success()
+        }
+
+    }
+
+    class StatusWorker1(
+        context: Context,
+        workerParams: WorkerParameters,
+    ): CoroutineWorker(context, workerParams) {
+        override suspend fun doWork(): Result {
+            Log.d("StatusWorker", "Worker is running for not using app")
+            FirebaseFirestore.getInstance().collection("users")
+                .document(currentUser?.phoneNumber.toString())
+                .collection("contacts")
+                .whereEqualTo("appUser", true)
+                .get().addOnSuccessListener {  snapshot ->
+                    for (dc in snapshot.documents) {
+                        val data = dc.data
+                        val phoneNumber = data?.get("contactPhoneNumber").toString()
+                        Log.d("UserState", "Notifying state to user: ${data?.get("contactName").toString()}")
+                        FirebaseFirestore.getInstance().collection("users")
+                            .document(phoneNumber)
+                            .collection("contacts")
+                            .document(currentUser?.phoneNumber.toString())
+                            .update("state", "Not using app")
+                            .addOnSuccessListener {
+                                Log.d("UserState", "Notified to contact")
+                            }.addOnFailureListener {
+                                Log.d("UserState", "Failed to notify contact", it)
+                            }
+                    }
+                }.addOnFailureListener {
+                    Log.d("Contact", "Failed to notify to contacts", it)
+                }
+            Log.d("StatusWorker", "Worker is done for not using app")
+            return Result.success()
+        }
+
     }
 }

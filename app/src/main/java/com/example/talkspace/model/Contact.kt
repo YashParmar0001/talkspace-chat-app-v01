@@ -10,6 +10,7 @@ data class FirebaseContact(
     val contactAbout: String,
     val contactPhotoUrl: String,
     var isAppUser: Boolean,
+    var state: String
 ) {
     fun toSQLObject(): SQLiteContact {
         return SQLiteContact(
@@ -36,8 +37,14 @@ data class SQLiteContact(
             contactName = contactName,
             contactAbout = contactAbout,
             contactPhotoUrl = contactPhotoUrl,
-            isAppUser = isAppUser
+            isAppUser = isAppUser,
+            state = OFFLINE
         )
+    }
+
+    companion object {
+        const val ONLINE = "Online"
+        const val OFFLINE = "Offline"
     }
 
 }
