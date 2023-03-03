@@ -32,7 +32,7 @@ class ChatListAdapter(private val chatViewModel: ChatViewModel) :
             chatViewModel.setCurrentFriendName(item.friendName)
             Log.d("Chats", "Name: ${chatViewModel.currentFriendName.value}")
             Log.d("Chats", "Id: ${chatViewModel.currentFriendId.value}")
-            holder.itemView.findNavController().navigate(R.id.action_mainFragment_to_chatFragment)
+//            holder.itemView.findNavController().navigate(R.id.action_mainFragment_to_chatFragment)
         }
     }
 

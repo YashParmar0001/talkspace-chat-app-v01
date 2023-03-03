@@ -10,23 +10,24 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.example.talkspace.ApplicationClass
+import com.example.talkspace.MainActivity
 import com.example.talkspace.R
 import com.example.talkspace.SignInActivity
 import com.example.talkspace.databinding.FragmentUserDetailBinding
 import com.example.talkspace.repositories.LocalProfilePhotoStorage
-import com.example.talkspace.repositories.UserRepositories
+import com.example.talkspace.viewmodels.UserViewModel
+import com.example.talkspace.viewmodels.UserViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.auth.ktx.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 //import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.io.File
 
@@ -39,12 +40,21 @@ class UserDetailFragment : Fragment() {
     private var userAbout: String = ""
     private var newPhotoUri = Uri.EMPTY
 
+//    private val userViewModel: UserViewModel by viewModels {
+//        UserViewModelFactory(
+//            ApplicationClass().getInstance().userRepository
+//        )
+//    }
+
+//    private val userViewModel = ViewModelProvider(MainActivity(), UserViewModelFactory(
+//        (MainActivity().application as ApplicationClass).userRepository
+//    ))[UserViewModel::class.java]
+
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()){
         if (it != null){
             Log.d("UserDetailFragment","Image picker : ${it.toString()}")
 //        Glide.with(binding!!.userProfileImage.context).load(it).into(binding!!.userProfileImage)
             showCustomPhotoDialog(it)
-
             newPhotoUri = it
         }
     }
@@ -53,7 +63,6 @@ class UserDetailFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         val fragmentBinding = FragmentUserDetailBinding.inflate(inflater, container, false)
         binding = fragmentBinding
         return fragmentBinding.root
@@ -64,7 +73,8 @@ class UserDetailFragment : Fragment() {
 
         val backChangeButton = getView()?.findViewById<ImageView>(R.id.back_chat_button)
         loadUserDetails()
-        loadUserProfilePhoto()
+//        loadUserProfilePhoto()
+
         binding?.editNameIcon?.setOnClickListener {
             showCustomDialog("Edit Name :", userName, "userName")
         }
@@ -116,25 +126,11 @@ class UserDetailFragment : Fragment() {
     }
 
     private fun loadUserDetails() {
-        Log.d("UserDetailFragment", "user Id : ${currentUser?.uid}")
-        FirebaseFirestore.getInstance().collection("users")
-            .document(currentUser?.phoneNumber.toString())
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.d("UserDetailFragment", "Error occurred in fetching User Details : ", e)
-                }
-                if (snapshot != null) {
-                    userName = snapshot["userName"].toString()
-                    binding?.displayName?.text = userName
-                    userAbout = snapshot["userAbout"].toString()
-                    binding?.displayAbout?.text = userAbout
-                    binding?.displayMobileNo?.text = snapshot["userPhoneNumber"].toString()
-                } else {
-                    Log.d("UserDetailFragment", "User details not available in firebase")
-                }
-                val source = if (snapshot?.metadata?.isFromCache == true) "cache" else "server"
-                Log.d("UserDetailFragment", "Data source : $source")
-            }
+        // Load user name
+        // TODO: Add data binding for user details
+        Log.d("UserRepo", "Activity: ${requireActivity()}")
+//        Log.d("UserRepo", "Loading user name: ${userViewModel.userName.value}")
+//        binding?.displayName?.text = userViewModel.userName.value
     }
 
     private fun logout() {
@@ -166,25 +162,5 @@ class UserDetailFragment : Fragment() {
         val customPhotoDialog = CustomPhotoDialog()
         customPhotoDialog.arguments = bundle
         customPhotoDialog.show(parentFragmentManager,"coustem")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("UserDetails", "On pause called!")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("UserDetails", "On stop called")
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Log.d("UserDetails", "On start called")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("UserDetails", "On resume called")
     }
 }

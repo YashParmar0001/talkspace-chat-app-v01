@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.talkspace.repositories.AppDatabase
 import com.example.talkspace.repositories.ChatRepository
 import com.example.talkspace.repositories.ContactsRepository
+import com.example.talkspace.repositories.UserRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 
@@ -20,17 +21,22 @@ class ApplicationClass: Application() {
         ContactsRepository(database.contactDao())
     }
 
+    val userRepository: UserRepository by lazy {
+        UserRepository(this.applicationContext)
+    }
+
+    private lateinit var instance: ApplicationClass
+
     override fun onCreate() {
         super.onCreate()
+
         // Apply settings to the firebase
         val settings = FirebaseFirestoreSettings.Builder().setPersistenceEnabled(false).build()
         FirebaseFirestore.getInstance().firestoreSettings = settings
-
 //        contactRepository.notifyAppUserContactsAboutStatus("Using the app")
     }
 
-    override fun onTerminate() {
-//        contactRepository.notifyAppUserContactsAboutStatus("Not using app")
-        super.onTerminate()
+    fun getInstance(): ApplicationClass {
+        return instance
     }
 }

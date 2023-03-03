@@ -8,11 +8,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.work.*
-import com.example.talkspace.StatusWorker
 import com.example.talkspace.model.FirebaseContact
 import com.example.talkspace.model.SQLiteContact
 import com.example.talkspace.model.SQLiteContact.Companion.OFFLINE
-import com.example.talkspace.ui.currentUser
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
@@ -377,81 +375,10 @@ class ContactsRepository(
     }
 
     fun notifyAppUserContactsAboutStatus(status: String, context: Context) {
-        val workRequest = OneTimeWorkRequest.Builder(StatusWorker::class.java).build()
-        WorkManager.getInstance(context).enqueue(workRequest)
+
     }
 
     fun notifyAppUserContactsAboutStatus(context: Context) {
-        val workRequest = OneTimeWorkRequest.Builder(StatusWorker1::class.java).build()
-        WorkManager.getInstance(context).enqueue(workRequest)
-    }
-
-    class StatusWorker(
-        context: Context,
-        workerParams: WorkerParameters,
-    ): CoroutineWorker(context, workerParams) {
-        override suspend fun doWork(): Result {
-            Log.d("StatusWorker", "Worker is running")
-            FirebaseFirestore.getInstance().collection("users")
-                .document(currentUser?.phoneNumber.toString())
-                .collection("contacts")
-                .whereEqualTo("appUser", true)
-                .get().addOnSuccessListener {  snapshot ->
-                    for (dc in snapshot.documents) {
-                        val data = dc.data
-                        val phoneNumber = data?.get("contactPhoneNumber").toString()
-                        Log.d("UserState", "Notifying state to user: ${data?.get("contactName").toString()}")
-                        FirebaseFirestore.getInstance().collection("users")
-                            .document(phoneNumber)
-                            .collection("contacts")
-                            .document(currentUser?.phoneNumber.toString())
-                            .update("state", "Using app")
-                            .addOnSuccessListener {
-                                Log.d("UserState", "Notified to contact")
-                            }.addOnFailureListener {
-                                Log.d("UserState", "Failed to notify contact", it)
-                            }
-                    }
-                }.addOnFailureListener {
-                    Log.d("Contact", "Failed to notify to contacts", it)
-                }
-            return Result.success()
-        }
-
-    }
-
-    class StatusWorker1(
-        context: Context,
-        workerParams: WorkerParameters,
-    ): CoroutineWorker(context, workerParams) {
-        override suspend fun doWork(): Result {
-            Log.d("StatusWorker", "Worker is running for not using app")
-            FirebaseFirestore.getInstance().collection("users")
-                .document(currentUser?.phoneNumber.toString())
-                .collection("contacts")
-                .whereEqualTo("appUser", true)
-                .get().addOnSuccessListener {  snapshot ->
-                    for (dc in snapshot.documents) {
-                        val data = dc.data
-                        val phoneNumber = data?.get("contactPhoneNumber").toString()
-                        Log.d("UserState", "Notifying state to user: ${data?.get("contactName").toString()}")
-                        FirebaseFirestore.getInstance().collection("users")
-                            .document(phoneNumber)
-                            .collection("contacts")
-                            .document(currentUser?.phoneNumber.toString())
-                            .update("state", "Not using app")
-                            .addOnSuccessListener {
-                                Log.d("UserState", "Notified to contact")
-                            }.addOnFailureListener {
-                                Log.d("UserState", "Failed to notify contact", it)
-                            }
-                    }
-                }.addOnFailureListener {
-                    Log.d("Contact", "Failed to notify to contacts", it)
-                }
-            Log.d("StatusWorker", "Worker is done for not using app")
-            return Result.success()
-        }
 
     }
 }

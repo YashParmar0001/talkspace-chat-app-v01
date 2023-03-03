@@ -38,7 +38,7 @@ class AddContactFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding?.addContactBtn?.setOnClickListener {
-            findNavController().navigate(R.id.action_mainFragment_to_contactsOnApp)
+//            findNavController().navigate(R.id.action_mainFragment_to_contactsOnApp)
 //            pickContact.launch(null)
         }
     }

@@ -1,34 +1,43 @@
 package com.example.talkspace
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.app.Service
-import android.content.*
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.database.ContentObserver
-import android.os.*
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.ContactsContract
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.setupWithNavController
 import com.example.talkspace.databinding.ActivityMainBinding
-import com.example.talkspace.model.SQLiteContact
 import com.example.talkspace.observers.ContactsChangeObserver
-import com.example.talkspace.ui.currentUser
 import com.example.talkspace.viewmodels.ChatViewModel
 import com.example.talkspace.viewmodels.ChatViewModelFactory
+import com.example.talkspace.viewmodels.UserViewModel
+import com.example.talkspace.viewmodels.UserViewModelFactory
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ServerValue
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.database.ktx.getValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -41,6 +50,16 @@ class MainActivity : AppCompatActivity() {
             (this.application as ApplicationClass).contactRepository
         )
     }
+
+    private val userViewModel: UserViewModel by viewModels {
+        UserViewModelFactory(
+            (this.application as ApplicationClass).userRepository
+        )
+    }
+
+//    private val userViewModel = ViewModelProvider(this, UserViewModelFactory(
+//        (this.application as ApplicationClass).userRepository
+//    ))[UserViewModel::class.java]
 
     private lateinit var contactObserver: ContactsChangeObserver
 
@@ -58,16 +77,46 @@ class MainActivity : AppCompatActivity() {
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root)
 
-            val navHostFragment = supportFragmentManager
-                .findFragmentById(R.id.outer_container) as NavHostFragment
-
-            navController = navHostFragment.navController
+            val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+            val navController = navHostFragment.navController
+            val navView: BottomNavigationView = findViewById(R.id.bottom_nav)
+            navView.setupWithNavController(navController)
 
             preferences = getSharedPreferences("contactPrefs", MODE_PRIVATE)
             isFirstTimeLogin = preferences.getBoolean("firstTime", true)
 
-            // Todo: Set user state as "Online"
-            chatViewModel.notifyUserState("Using app", this)
+            // Get user data
+            userViewModel.getUserDetails()
+            Log.d("UserRepo", "User name in MainActivity: ${userViewModel.userName.value}")
+
+//            // Todo: Set user state as "Online"
+//            chatViewModel.notifyUserState("Using app", this)
+
+            val database = Firebase.database
+            val myConnectionsRef = database.getReference("users/yash/status")
+
+            val lastOnlineRef = database.getReference("users/yash/lastOnline")
+
+            val connectedRef = database.getReference(".info/connected")
+            connectedRef.addValueEventListener(object: ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val connected = snapshot.getValue<Boolean>() ?: false
+                    if (connected) {
+                        val con = myConnectionsRef.push()
+
+                        con.onDisconnect().removeValue()
+
+                        lastOnlineRef.onDisconnect().setValue(ServerValue.TIMESTAMP)
+
+                        con.setValue(true)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.w("StatusListener", "Listener was cancelled at .info/connected")
+                }
+
+            })
 
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
                 == PackageManager.PERMISSION_GRANTED) {

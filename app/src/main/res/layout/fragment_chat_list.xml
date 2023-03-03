@@ -30,9 +30,9 @@
                 android:layout_gravity="bottom"
                 android:layout_marginBottom="25dp"
                 android:paddingStart="7dp"
-                android:paddingEnd="7dp"
                 android:paddingTop="30dp"
-                app:layout_collapseMode="none" >
+                android:paddingEnd="7dp"
+                app:layout_collapseMode="none">
 
             </androidx.recyclerview.widget.RecyclerView>
         </com.google.android.material.appbar.CollapsingToolbarLayout>

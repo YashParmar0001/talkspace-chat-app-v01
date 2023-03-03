@@ -8,13 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
-import com.bumptech.glide.Glide
 import com.example.talkspace.R
-import com.example.talkspace.repositories.UserRepositories
+import com.example.talkspace.repositories.UserRepository
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
@@ -62,7 +59,7 @@ class CustomPhotoDialog(): DialogFragment() {
     }
     private fun updateProfilePhoto() {
         if (newPhotoUri != Uri.EMPTY) {
-            UserRepositories.saveUserProfilePhoto(requireContext(), newPhotoUri)
+//            UserRepository.saveUserProfilePhoto(requireContext(), newPhotoUri)
             if (photoUrl == ""
                 || photoUrl == "null"
             ) {

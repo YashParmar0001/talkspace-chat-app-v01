@@ -20,14 +20,14 @@ import com.example.talkspace.ApplicationClass
 import com.example.talkspace.R
 import com.example.talkspace.adapter.ChatListAdapter
 import com.example.talkspace.adapter.StatusAdapter
-import com.example.talkspace.databinding.FragmentFriendListBinding
+import com.example.talkspace.databinding.FragmentChatListBinding
 import com.example.talkspace.viewmodels.ChatViewModel
 import com.example.talkspace.viewmodels.ChatViewModelFactory
 import com.google.android.material.snackbar.Snackbar
 
 class ChatListFragment : Fragment() {
 
-    private lateinit var binding: FragmentFriendListBinding
+    private lateinit var binding: FragmentChatListBinding
     private val chatViewModel: ChatViewModel by activityViewModels {
         ChatViewModelFactory(
             (activity?.application as ApplicationClass).chatRepository,
@@ -40,7 +40,7 @@ class ChatListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        binding = FragmentFriendListBinding.inflate(inflater, container, false)
+        binding = FragmentChatListBinding.inflate(inflater, container, false)
 
         // For stories
         binding.recyclerView.layoutManager =
@@ -79,7 +79,7 @@ class ChatListFragment : Fragment() {
         }
 
         profileIcon?.setOnClickListener {
-            findNavController().navigate(R.id.action_mainFragment_to_userDetailFragment)
+            findNavController().navigate(R.id.action_chatListFragment_to_userDetailFragment)
         }
     }
 
