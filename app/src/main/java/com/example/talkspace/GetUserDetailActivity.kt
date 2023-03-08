@@ -15,7 +15,6 @@ import com.example.talkspace.databinding.ActivityGetUserDetailBinding
 import com.example.talkspace.model.User
 import com.example.talkspace.repositories.UserRepository
 import com.example.talkspace.viewmodels.UserViewModel
-import com.example.talkspace.viewmodels.UserViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
@@ -23,7 +22,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class GetUserDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityGetUserDetailBinding
@@ -44,11 +45,7 @@ class GetUserDetailActivity : AppCompatActivity() {
         }
     }
 
-    private val userViewModel: UserViewModel by viewModels {
-        UserViewModelFactory(
-            (this.application as ApplicationClass).userRepository
-        )
-    }
+    private val userViewModel: UserViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,7 +95,7 @@ class GetUserDetailActivity : AppCompatActivity() {
                         }
                         currentUser.updateProfile(profileUpdate)
                             .addOnSuccessListener {
-                                userViewModel.setUserName(userName)
+//                                userViewModel.setUserName(userName)
                                 Log.d("GetUserDetailActivity", "Updated user profile")
                             }
                             .addOnFailureListener {

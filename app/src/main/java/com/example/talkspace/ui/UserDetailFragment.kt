@@ -1,5 +1,6 @@
 package com.example.talkspace.ui
 
+//import com.google.firebase.firestore.ktx.firestore
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -8,29 +9,29 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
-import com.example.talkspace.ApplicationClass
 import com.example.talkspace.MainActivity
 import com.example.talkspace.R
 import com.example.talkspace.SignInActivity
 import com.example.talkspace.databinding.FragmentUserDetailBinding
 import com.example.talkspace.repositories.LocalProfilePhotoStorage
 import com.example.talkspace.viewmodels.UserViewModel
-import com.example.talkspace.viewmodels.UserViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FirebaseFirestore
-//import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 
+@AndroidEntryPoint
 class UserDetailFragment : Fragment() {
 
     private var binding: FragmentUserDetailBinding? = null
@@ -40,19 +41,11 @@ class UserDetailFragment : Fragment() {
     private var userAbout: String = ""
     private var newPhotoUri = Uri.EMPTY
 
-//    private val userViewModel: UserViewModel by viewModels {
-//        UserViewModelFactory(
-//            ApplicationClass().getInstance().userRepository
-//        )
-//    }
-
-//    private val userViewModel = ViewModelProvider(MainActivity(), UserViewModelFactory(
-//        (MainActivity().application as ApplicationClass).userRepository
-//    ))[UserViewModel::class.java]
+    private val userViewModel: UserViewModel by activityViewModels()
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()){
         if (it != null){
-            Log.d("UserDetailFragment","Image picker : ${it.toString()}")
+            Log.d("UserDetailFragment","Image picker : $it")
 //        Glide.with(binding!!.userProfileImage.context).load(it).into(binding!!.userProfileImage)
             showCustomPhotoDialog(it)
             newPhotoUri = it
@@ -63,15 +56,25 @@ class UserDetailFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val fragmentBinding = FragmentUserDetailBinding.inflate(inflater, container, false)
+        val fragmentBinding = DataBindingUtil.inflate<FragmentUserDetailBinding>(
+            inflater,
+            R.layout.fragment_user_detail,
+            container,
+            false
+        ).apply {
+            viewModel = userViewModel
+            lifecycleOwner = viewLifecycleOwner
+        }
         binding = fragmentBinding
+
+        (requireActivity() as MainActivity).hideBottomNavigation()
         return fragmentBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val backChangeButton = getView()?.findViewById<ImageView>(R.id.back_chat_button)
+        val backBtn = getView()?.findViewById<ImageView>(R.id.back_btn)
         loadUserDetails()
 //        loadUserProfilePhoto()
 
@@ -87,11 +90,16 @@ class UserDetailFragment : Fragment() {
         binding?.editAboutIcon?.setOnClickListener {
             showCustomDialog("Edit About :", userAbout, "userAbout")
         }
-        backChangeButton?.setOnClickListener {
+
+        backBtn?.setOnClickListener {
 //            findNavController().navigate(R.id.action_userDetailFragment_to_mainFragment)
             findNavController().navigateUp()
         }
-        binding?.deleteAccountImage?.setOnClickListener { logout() }
+
+        binding?.signOutCard?.setOnClickListener {
+            logout()
+        }
+
 //        binding?.deleteAccountText?.setOnClickListener { logout() }
     }
 
@@ -99,8 +107,6 @@ class UserDetailFragment : Fragment() {
         super.onDestroy()
         binding = null
     }
-
-//    upload to cloud storage
 
     private fun loadUserProfilePhoto(){
         Glide.with(binding!!.userProfileImage.context).load(R.drawable.ic_baseline_person_24).into(

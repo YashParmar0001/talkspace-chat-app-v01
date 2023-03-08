@@ -83,7 +83,7 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val backChatButton = getView()?.findViewById<ImageView>(R.id.back_chat_button)
+        val backChatButton = getView()?.findViewById<ImageView>(R.id.back_btn)
         backChatButton?.setOnClickListener {
             findNavController().navigateUp()
         }

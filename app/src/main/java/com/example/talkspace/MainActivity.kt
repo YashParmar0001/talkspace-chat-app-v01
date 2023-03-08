@@ -9,6 +9,8 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.ContactsContract
 import android.util.Log
+import android.view.View
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -17,32 +19,23 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.NavigationUI
-import androidx.navigation.ui.setupWithNavController
 import com.example.talkspace.databinding.ActivityMainBinding
 import com.example.talkspace.observers.ContactsChangeObserver
 import com.example.talkspace.viewmodels.ChatViewModel
 import com.example.talkspace.viewmodels.ChatViewModelFactory
 import com.example.talkspace.viewmodels.UserViewModel
-import com.example.talkspace.viewmodels.UserViewModelFactory
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ServerValue
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
-import com.google.firebase.database.ktx.getValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var navController : NavController
+    private lateinit var navController: NavController
 
     private val chatViewModel: ChatViewModel by viewModels {
         ChatViewModelFactory(
@@ -51,15 +44,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private val userViewModel: UserViewModel by viewModels {
-        UserViewModelFactory(
-            (this.application as ApplicationClass).userRepository
-        )
-    }
-
-//    private val userViewModel = ViewModelProvider(this, UserViewModelFactory(
-//        (this.application as ApplicationClass).userRepository
-//    ))[UserViewModel::class.java]
+    private val userViewModel: UserViewModel by viewModels()
 
     private lateinit var contactObserver: ContactsChangeObserver
 
@@ -70,56 +55,31 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Firebase.auth.currentUser == null){
-            startActivity(Intent(this,SignInActivity::class.java))
+        if (Firebase.auth.currentUser == null) {
+            startActivity(Intent(this, SignInActivity::class.java))
             finish()
-        }else {
+        } else {
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root)
 
-            val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-            val navController = navHostFragment.navController
-            val navView: BottomNavigationView = findViewById(R.id.bottom_nav)
-            navView.setupWithNavController(navController)
+            // TODO: For bottom navigation
+            val navHostFragment =
+                supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+            navController = navHostFragment.navController
+            setupSmoothBottomMenu()
 
+            // TODO: For offline data storing
             preferences = getSharedPreferences("contactPrefs", MODE_PRIVATE)
             isFirstTimeLogin = preferences.getBoolean("firstTime", true)
 
-            // Get user data
             userViewModel.getUserDetails()
-            Log.d("UserRepo", "User name in MainActivity: ${userViewModel.userName.value}")
 
 //            // Todo: Set user state as "Online"
 //            chatViewModel.notifyUserState("Using app", this)
 
-            val database = Firebase.database
-            val myConnectionsRef = database.getReference("users/yash/status")
-
-            val lastOnlineRef = database.getReference("users/yash/lastOnline")
-
-            val connectedRef = database.getReference(".info/connected")
-            connectedRef.addValueEventListener(object: ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val connected = snapshot.getValue<Boolean>() ?: false
-                    if (connected) {
-                        val con = myConnectionsRef.push()
-
-                        con.onDisconnect().removeValue()
-
-                        lastOnlineRef.onDisconnect().setValue(ServerValue.TIMESTAMP)
-
-                        con.setValue(true)
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.w("StatusListener", "Listener was cancelled at .info/connected")
-                }
-
-            })
-
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-                == PackageManager.PERMISSION_GRANTED) {
+                == PackageManager.PERMISSION_GRANTED
+            ) {
                 // Registering contacts change observer
                 lifecycleScope.launch(Dispatchers.IO) {
                     chatViewModel.syncContacts(firestore, contentResolver, isFirstTimeLogin)
@@ -128,7 +88,7 @@ class MainActivity : AppCompatActivity() {
                 chatViewModel.startListeningForChats()
                 chatViewModel.startListeningForContacts()
                 registerContactsChangeObserver()
-            }else {
+            } else {
                 val requestPermissionLauncher =
                     registerForActivityResult(
                         ActivityResultContracts.RequestPermission()
@@ -137,7 +97,11 @@ class MainActivity : AppCompatActivity() {
                             Log.i("Permission: ", "Granted")
                             // Register contacts change observer
                             lifecycleScope.launch(Dispatchers.IO) {
-                                chatViewModel.syncContacts(firestore, contentResolver, isFirstTimeLogin)
+                                chatViewModel.syncContacts(
+                                    firestore,
+                                    contentResolver,
+                                    isFirstTimeLogin
+                                )
                             }
                             changeFirstTime()
                             chatViewModel.startListeningForChats()
@@ -145,7 +109,8 @@ class MainActivity : AppCompatActivity() {
                             registerContactsChangeObserver()
                         } else {
                             Log.i("Permission: ", "Denied")
-                            Toast.makeText(this,
+                            Toast.makeText(
+                                this,
                                 "You need to add permission in order to access contacts",
                                 Toast.LENGTH_LONG
                             ).show()
@@ -197,12 +162,23 @@ class MainActivity : AppCompatActivity() {
             val editor: SharedPreferences.Editor = preferences.edit()
             editor.putBoolean("firstTime", false)
             editor.apply()
-        }else {
+        } else {
             Log.d("NotifyContact", "Not first time sign in")
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    private fun setupSmoothBottomMenu() {
+        val popupMenu = PopupMenu(this, null)
+        popupMenu.inflate(R.menu.bottom_navigation_menu)
+        val menu = popupMenu.menu
+        binding.bottomNav.setupWithNavController(menu, navController)
+    }
+
+    fun hideBottomNavigation() {
+        binding.bottomNav.visibility = View.GONE
+    }
+
+    fun showBottomNavigation() {
+        binding.bottomNav.visibility = View.VISIBLE
     }
 }

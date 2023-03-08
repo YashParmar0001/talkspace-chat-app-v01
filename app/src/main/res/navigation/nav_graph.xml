@@ -39,4 +39,19 @@
             android:id="@+id/action_contactsOnApp_to_chatFragment"
             app:destination="@id/chatFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/callHistoryFragment"
+        android:name="com.example.talkspace.ui.CallHistoryFragment"
+        android:label="CallHistoryFragment"
+        tools:layout="@layout/fragment_call_history"/>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.talkspace.ui.SettingsFragment"
+        android:label="SettingFragment"
+        tools:layout="@layout/fragment_settings"/>
+    <fragment
+        android:id="@+id/groupsFragment"
+        android:name="com.example.talkspace.ui.GroupsFragment"
+        android:label="ContactFragment"
+        tools:layout="@layout/fragment_groups"/>
 </navigation>

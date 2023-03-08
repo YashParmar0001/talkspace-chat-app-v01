@@ -26,6 +26,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.core.view.accessibility.AccessibilityEventCompat.setAction
+import com.example.talkspace.MainActivity
 import com.example.talkspace.adapter.SectionedContactAdapter
 import com.google.android.material.snackbar.Snackbar
 
@@ -97,6 +98,8 @@ class ContactsOnAppFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentContactsOnAppBinding.inflate(inflater, container, false)
+
+        (requireActivity() as MainActivity).hideBottomNavigation()
 
         contacts = chatViewModel.getContacts()
         appUserContacts = chatViewModel.appUserContacts

@@ -5,22 +5,18 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.talkspace.R
-import com.example.talkspace.databinding.FragmentSettingBinding
+import com.example.talkspace.databinding.FragmentGroupsBinding
 
-class SettingFragment : Fragment() {
+class GroupsFragment : Fragment() {
 
-    private var binding : FragmentSettingBinding? = null
-
+    private var binding : FragmentGroupsBinding? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-
-        val fragmentBinding = FragmentSettingBinding.inflate(inflater, container, false)
+        val fragmentBinding = FragmentGroupsBinding.inflate(inflater,container,false)
         binding = fragmentBinding
-
         return fragmentBinding.root
     }
 

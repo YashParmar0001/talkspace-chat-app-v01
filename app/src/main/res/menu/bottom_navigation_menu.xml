@@ -8,26 +8,20 @@
         android:icon="@drawable/ic_baseline_mode_comment_24"/>
 
     <item
-        android:id="@+id/call"
+        android:id="@+id/groupsFragment"
+        android:title="Groups"
+        android:enabled="true"
+        android:icon="@drawable/ic_groups"/>
+
+    <item
+        android:id="@+id/callHistoryFragment"
         android:title="Call"
         android:enabled="true"
         android:icon="@drawable/ic_call"/>
 
     <item
-        android:id="@+id/contactsOnAppFragment"
-        android:title="Add"
-        android:enabled="true"
-        android:icon="@drawable/ic_add"/>
-
-    <item
-        android:id="@+id/item_contact"
-        android:title="Contacts"
-        android:enabled="true"
-        android:icon="@drawable/ic_person"/>
-
-    <item
-        android:id="@+id/item_setting"
-        android:title="Setting"
+        android:id="@+id/settingsFragment"
+        android:title="Settings"
         android:enabled="true"
         android:icon="@drawable/ic_settings"/>
 

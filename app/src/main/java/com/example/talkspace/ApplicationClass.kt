@@ -7,7 +7,9 @@ import com.example.talkspace.repositories.ContactsRepository
 import com.example.talkspace.repositories.UserRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class ApplicationClass: Application() {
     private val database: AppDatabase by lazy {
         AppDatabase.getDatabase(this)
@@ -25,8 +27,6 @@ class ApplicationClass: Application() {
         UserRepository(this.applicationContext)
     }
 
-    private lateinit var instance: ApplicationClass
-
     override fun onCreate() {
         super.onCreate()
 
@@ -34,9 +34,5 @@ class ApplicationClass: Application() {
         val settings = FirebaseFirestoreSettings.Builder().setPersistenceEnabled(false).build()
         FirebaseFirestore.getInstance().firestoreSettings = settings
 //        contactRepository.notifyAppUserContactsAboutStatus("Using the app")
-    }
-
-    fun getInstance(): ApplicationClass {
-        return instance
     }
 }

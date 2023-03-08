@@ -15,7 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 //import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-class CustomDialog() : DialogFragment() {
+class CustomDialog  : DialogFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,6 +43,7 @@ class CustomDialog() : DialogFragment() {
         val cancel = view.findViewById<TextView>(R.id.cancel_btn)
         val inputText = view.findViewById<EditText>(R.id.input_dialog)
         val key = arguments?.getString("key").toString()
+
         saveButton.setOnClickListener {
             val updateText = inputText.text.toString().trim()
             if (!areDetailsIsInvalid(updateText)) {
@@ -67,5 +68,9 @@ class CustomDialog() : DialogFragment() {
 
     private fun areDetailsIsInvalid(inputText: String): Boolean {
         return inputText == "" || inputText == "null"
+    }
+
+    fun changeUserName() {
+
     }
 }

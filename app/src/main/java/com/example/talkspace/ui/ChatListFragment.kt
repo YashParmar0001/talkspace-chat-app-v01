@@ -13,10 +13,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.talkspace.ApplicationClass
+import com.example.talkspace.MainActivity
 import com.example.talkspace.R
 import com.example.talkspace.adapter.ChatListAdapter
 import com.example.talkspace.adapter.StatusAdapter
@@ -35,6 +37,8 @@ class ChatListFragment : Fragment() {
         )
     }
 
+//    private lateinit var activity: MainActivity
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,6 +46,7 @@ class ChatListFragment : Fragment() {
 
         binding = FragmentChatListBinding.inflate(inflater, container, false)
 
+        (requireActivity() as MainActivity).showBottomNavigation()
         // For stories
         binding.recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
@@ -60,7 +65,6 @@ class ChatListFragment : Fragment() {
                 adapter.submitList(chats)
             }
         }
-
         return binding.root
     }
 
@@ -79,12 +83,7 @@ class ChatListFragment : Fragment() {
         }
 
         profileIcon?.setOnClickListener {
-            findNavController().navigate(R.id.action_chatListFragment_to_userDetailFragment)
+            view.findNavController().navigate(R.id.action_chatListFragment_to_userDetailFragment)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("FriendListFragment", "Fragment Destroy")
     }
 }

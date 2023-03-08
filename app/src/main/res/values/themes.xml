@@ -51,4 +51,13 @@
     <style name="ShapeAppearance.TestingTalkSpace.Messages" parent="ShapeAppearance.MaterialComponents.MediumComponent">
         <item name="cornerSize">37%</item>
     </style>
+
+    <style name="ShapeAppearance.TalkSpace.FAB" parent="ShapeAppearance.MaterialComponents">
+        <item name="cornerFamily">rounded</item>
+
+        <item name="cornerSizeTopLeft">15dp</item>
+        <item name="cornerSizeTopRight">15dp</item>
+        <item name="cornerSizeBottomRight">15dp</item>
+        <item name="cornerSizeBottomLeft">15dp</item>
+    </style>
 </resources>

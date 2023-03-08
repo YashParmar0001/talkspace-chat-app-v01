@@ -25,7 +25,8 @@
         android:paddingStart="6dp"
         android:paddingEnd="4dp"
         android:textSize="18sp"
-        tools:text="j.k.pedhadiya"/>
+        tools:text="Yash Parmar"
+        android:autofillHints="username" />
 
     <LinearLayout
         android:orientation="horizontal"
