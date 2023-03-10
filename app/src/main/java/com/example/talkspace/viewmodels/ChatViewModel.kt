@@ -2,7 +2,6 @@ package com.example.talkspace.viewmodels
 
 import android.content.ContentResolver
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.*
 import com.example.talkspace.model.FirebaseMessage
 import com.example.talkspace.model.SQLChat
@@ -11,11 +10,12 @@ import com.example.talkspace.model.SQLiteMessage
 import com.example.talkspace.repositories.ChatRepository
 import com.example.talkspace.repositories.ContactsRepository
 import com.example.talkspace.ui.currentUser
-import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class ChatViewModel(
+@HiltViewModel
+class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val contactsRepository: ContactsRepository
 ): ViewModel() {
@@ -66,13 +66,13 @@ class ChatViewModel(
         return contactsRepository.getContacts()
     }
 
-//    fun getAppUserContacts(): LiveData<List<SQLiteContact>> {
-//        return contactsRepository.getAppUserContacts()
-//    }
+    fun getContactsAppUser(): LiveData<List<SQLiteContact>> {
+        return contactsRepository.getAppUserContacts()
+    }
 
-//    fun getNonAppUserContacts(): LiveData<List<SQLiteContact>> {
-//        return contactsRepository.getNonAppUserContacts()
-//    }
+    fun getContactsNonAppUser(): LiveData<List<SQLiteContact>> {
+        return contactsRepository.getNonAppUserContacts()
+    }
 
     fun addChat(chat: SQLChat) {
         chatRepository.addChat(chat, viewModelScope)
@@ -114,25 +114,12 @@ class ChatViewModel(
         contactsRepository.syncContacts(firestore, contentResolver, isFirstTimeLogin)
     }
 
-    fun notifyUserState(status: String, context: Context) {
-        Log.d("UserState", "Notifying user state: $status")
-        contactsRepository.notifyAppUserContactsAboutStatus(status, context)
-    }
+//    fun notifyUserState(status: String, context: Context) {
+//        Log.d("UserState", "Notifying user state: $status")
+//        contactsRepository.notifyAppUserContactsAboutStatus(status, context)
+//    }
 
     fun notifyUserState1(context: Context) {
-        contactsRepository.notifyAppUserContactsAboutStatus(context)
-    }
-}
-
-class ChatViewModelFactory(
-    private val chatRepository: ChatRepository,
-    private val contactsRepository: ContactsRepository
-): ViewModelProvider.Factory {
-    override fun <T: ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return ChatViewModel(chatRepository, contactsRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
+//        contactsRepository.notifyAppUserContactsAboutStatus(context)
     }
 }

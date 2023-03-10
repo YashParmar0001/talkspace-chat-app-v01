@@ -21,7 +21,4 @@ interface ChatDao {
 
     @Query("SELECT * FROM contacts WHERE contactPhoneNumber=:phoneNumber")
     fun checkContact(phoneNumber: String): SQLiteContact
-
-//    @Query("SELECT * FROM chats WHERE phoneNumber=:phoneNumber")
-//    fun getChat(phoneNumber: String): SQLChat
 }

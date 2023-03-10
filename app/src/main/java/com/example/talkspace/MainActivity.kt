@@ -16,14 +16,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.talkspace.databinding.ActivityMainBinding
 import com.example.talkspace.observers.ContactsChangeObserver
 import com.example.talkspace.viewmodels.ChatViewModel
-import com.example.talkspace.viewmodels.ChatViewModelFactory
 import com.example.talkspace.viewmodels.UserViewModel
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -37,12 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
-    private val chatViewModel: ChatViewModel by viewModels {
-        ChatViewModelFactory(
-            (this.application as ApplicationClass).chatRepository,
-            (this.application as ApplicationClass).contactRepository
-        )
-    }
+    private val chatViewModel: ChatViewModel by viewModels()
 
     private val userViewModel: UserViewModel by viewModels()
 
@@ -62,7 +55,6 @@ class MainActivity : AppCompatActivity() {
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root)
 
-            // TODO: For bottom navigation
             val navHostFragment =
                 supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
             navController = navHostFragment.navController
@@ -73,6 +65,7 @@ class MainActivity : AppCompatActivity() {
             isFirstTimeLogin = preferences.getBoolean("firstTime", true)
 
             userViewModel.getUserDetails()
+            userViewModel.startListeningForUser()
 
 //            // Todo: Set user state as "Online"
 //            chatViewModel.notifyUserState("Using app", this)
@@ -82,7 +75,7 @@ class MainActivity : AppCompatActivity() {
             ) {
                 // Registering contacts change observer
                 lifecycleScope.launch(Dispatchers.IO) {
-                    chatViewModel.syncContacts(firestore, contentResolver, isFirstTimeLogin)
+//                    chatViewModel.syncContacts(firestore, contentResolver, isFirstTimeLogin)
                 }
                 changeFirstTime()
                 chatViewModel.startListeningForChats()
@@ -116,7 +109,6 @@ class MainActivity : AppCompatActivity() {
                             ).show()
                         }
                     }
-
                 requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
             }
         }
@@ -146,10 +138,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        chatViewModel.notifyUserState1(this)
+//        chatViewModel.notifyUserState1(this)
         super.onStop()
-//        chatViewModel.stopListeningForChats()
-//        chatViewModel.stopListeningForContacts()
+        chatViewModel.stopListeningForChats()
+        chatViewModel.stopListeningForContacts()
     }
 
     override fun onSupportNavigateUp(): Boolean {

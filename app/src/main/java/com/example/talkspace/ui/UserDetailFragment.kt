@@ -1,6 +1,7 @@
 package com.example.talkspace.ui
 
 //import com.google.firebase.firestore.ktx.firestore
+import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -8,6 +9,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.PickVisualMediaRequest
@@ -21,6 +24,8 @@ import com.bumptech.glide.Glide
 import com.example.talkspace.MainActivity
 import com.example.talkspace.R
 import com.example.talkspace.SignInActivity
+import com.example.talkspace.databinding.EditAboutDialogBinding
+import com.example.talkspace.databinding.EditNameDialogBinding
 import com.example.talkspace.databinding.FragmentUserDetailBinding
 import com.example.talkspace.repositories.LocalProfilePhotoStorage
 import com.example.talkspace.viewmodels.UserViewModel
@@ -43,6 +48,9 @@ class UserDetailFragment : Fragment() {
 
     private val userViewModel: UserViewModel by activityViewModels()
 
+    private lateinit var editNameDialog: Dialog
+    private lateinit var editAboutDialog: Dialog
+
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()){
         if (it != null){
             Log.d("UserDetailFragment","Image picker : $it")
@@ -63,6 +71,7 @@ class UserDetailFragment : Fragment() {
             false
         ).apply {
             viewModel = userViewModel
+            userDetailsFragment = this@UserDetailFragment
             lifecycleOwner = viewLifecycleOwner
         }
         binding = fragmentBinding
@@ -75,32 +84,58 @@ class UserDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val backBtn = getView()?.findViewById<ImageView>(R.id.back_btn)
-        loadUserDetails()
-//        loadUserProfilePhoto()
 
-        binding?.editNameIcon?.setOnClickListener {
-            showCustomDialog("Edit Name :", userName, "userName")
+        // TODO: For edit dialogs
+        val editNameDialogBinding = EditNameDialogBinding.inflate(layoutInflater)
+        editNameDialog = Dialog(requireContext())
+        editNameDialog.setContentView(editNameDialogBinding.root)
+//        editAboutDialog.window?.setBackgroundDrawableResource()
+
+        editNameDialogBinding.saveUsernameBtn.setOnClickListener {
+            Log.d("UserRepo", "Changing username")
+            editNameDialog.dismiss()
+            val progressBar = binding?.usernameProBar
+            progressBar?.visibility = View.VISIBLE
+            val newUserName = editNameDialogBinding.editUsernameInput.text.toString()
+            userViewModel.changeUserNameOnline(newUserName)
+                .addOnSuccessListener {
+                    userViewModel.changeUserNameOffline(newUserName)
+                    progressBar?.visibility = View.GONE
+                }.addOnFailureListener {
+                    Log.d("UserRepo", "Failed to change username", it)
+                }
         }
-        binding?.imageStorageButton?.setOnClickListener {
-            pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
 
-//            updateProfilePhoto()
+        editNameDialogBinding.cancelNameBtn.setOnClickListener {
+            editNameDialog.dismiss()
         }
 
-        binding?.editAboutIcon?.setOnClickListener {
-            showCustomDialog("Edit About :", userAbout, "userAbout")
+        val editAboutDialogBinding = EditAboutDialogBinding.inflate(layoutInflater)
+        editAboutDialog = Dialog(requireContext())
+        editAboutDialog.setContentView(editAboutDialogBinding.root)
+
+        editAboutDialogBinding.saveAboutBtn.setOnClickListener {
+            Log.d("UserRepo", "Changing userabout")
+            editAboutDialog.dismiss()
+            val progressBar = binding?.useraboutProBar
+            progressBar?.visibility = View.VISIBLE
+            val newUserAbout = editAboutDialogBinding.editAboutInput.text.toString()
+            userViewModel.changeUserAboutOnline(newUserAbout)
+                .addOnSuccessListener {
+                    userViewModel.changeUserAboutOffline(newUserAbout)
+                    progressBar?.visibility = View.GONE
+                }.addOnFailureListener {
+                    Log.d("UserRepo", "Failed to change userabout", it)
+                }
+        }
+
+        editAboutDialogBinding.cancelAboutBtn.setOnClickListener {
+            editAboutDialog.dismiss()
         }
 
         backBtn?.setOnClickListener {
-//            findNavController().navigate(R.id.action_userDetailFragment_to_mainFragment)
-            findNavController().navigateUp()
+            navigateBack()
         }
-
-        binding?.signOutCard?.setOnClickListener {
-            logout()
-        }
-
-//        binding?.deleteAccountText?.setOnClickListener { logout() }
     }
 
     override fun onDestroy() {
@@ -131,35 +166,23 @@ class UserDetailFragment : Fragment() {
         }
     }
 
-    private fun loadUserDetails() {
-        // Load user name
-        // TODO: Add data binding for user details
-        Log.d("UserRepo", "Activity: ${requireActivity()}")
-//        Log.d("UserRepo", "Loading user name: ${userViewModel.userName.value}")
-//        binding?.displayName?.text = userViewModel.userName.value
-    }
-
-    private fun logout() {
+    fun logout() {
         FirebaseAuth.getInstance().signOut()
         LocalProfilePhotoStorage.clearCache(requireContext())
         startActivity(Intent(requireContext(), SignInActivity::class.java))
         activity?.finish()
     }
 
-    private fun showCustomDialog(title: String, setInputDialog: String, key: String) {
-//        MaterialAlertDialogBuilder(requireContext())
-//            .setTitle(title)
-//            .setView(R.layout.custom_dialog)
-//            .show()
+    fun navigateBack() {
+        findNavController().navigateUp()
+    }
 
-        val bundle = Bundle()
-        bundle.putString("title", title)
-        bundle.putString("setEditInput", setInputDialog)
-        bundle.putString("key", key)
+    fun showEditNameDialog() {
+        editNameDialog.show()
+    }
 
-        val customDialog = CustomDialog()
-        customDialog.arguments = bundle
-        customDialog.show(parentFragmentManager, "custom")
+    fun showEditAboutDialog() {
+        editAboutDialog.show()
     }
 
     private fun showCustomPhotoDialog(photoUri: Uri){

@@ -27,7 +27,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <include layout="@layout/user_detail_app_bar"/>
+            <include layout="@layout/user_detail_app_bar" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <RelativeLayout
@@ -83,51 +83,57 @@
             android:layout_margin="12dp"
             app:cardCornerRadius="10dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/image_frame"
-            android:padding="12dp">
+            app:layout_constraintTop_toBottomOf="@id/image_frame">
 
-            <LinearLayout
+            <RelativeLayout
+                android:id="@+id/user_name_layout"
+                android:padding="10dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:gravity="end"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/user_name_label"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginBottom="3dp"
-                    android:paddingStart="40dp"
-                    android:padding="2dp"
-                    android:orientation="vertical">
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/test_1"
+                    android:text="@string/name_title"
+                    tools:ignore="RelativeOverlap" />
 
+                <TextView
+                    android:id="@+id/user_name_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:text="@{viewModel.userName}"
+                    tools:text="Yash Parmar"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@id/user_name_label" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/name_title"
-                        android:textColor="#E43F3F" />
-
-                    <TextView
-                        android:id="@+id/user_name_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:textSize="20sp"
-                        android:text="@{viewModel.userData.userName}"
-                        tools:text="Yash Parmar" />
-
-                </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/edit_name_icon"
+                <ProgressBar
+                    android:id="@+id/username_pro_bar"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_baseline_mode_edit_outline_24"/>
-            </LinearLayout>
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:layout_toStartOf="@id/edit_name_btn"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignBottom="@id/user_name_text"
+                    android:layout_marginEnd="10dp" />
+
+                <ImageView
+                    android:id="@+id/edit_name_btn"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/ic_baseline_mode_edit_outline_24"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:onClick="@{()->userDetailsFragment.showEditNameDialog()}"
+                    android:layout_alignBottom="@id/user_name_text"
+                    android:contentDescription="@string/edit_username_ic_desc" />
+
+            </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
@@ -142,47 +148,55 @@
             android:layout_gravity="center_vertical"
             android:padding="12dp">
 
-            <LinearLayout
+            <RelativeLayout
+                android:id="@+id/user_about_layout"
+                android:padding="10dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:gravity="end"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/user_about_label"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginBottom="3dp"
-                    android:paddingStart="40dp"
-                    android:padding="2dp"
-                    android:orientation="vertical">
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/test_1"
+                    android:text="@string/about_title"
+                    tools:ignore="RelativeOverlap" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="About :"
-                        android:textColor="#E43F3F" />
+                <TextView
+                    android:id="@+id/user_about_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:text="@{viewModel.userAbout}"
+                    tools:text="Pikachu Coder"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@id/user_about_label" />
 
-                    <TextView
-                        android:id="@+id/about_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:textSize="20sp"
-                        android:text="@{viewModel.userData.userAbout}"
-                        tools:text="Coder Pikachu" />
-
-                </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/edit_about_icon"
+                <ProgressBar
+                    android:id="@+id/userabout_pro_bar"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_baseline_mode_edit_outline_24"/>
-            </LinearLayout>
+                    tools:visibility="visible"
+                    android:visibility="gone"
+                    android:layout_toStartOf="@id/edit_about_btn"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignBottom="@id/user_about_text"
+                    android:layout_marginEnd="10dp" />
+
+                <ImageView
+                    android:id="@+id/edit_about_btn"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/ic_baseline_mode_edit_outline_24"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:onClick="@{()->userDetailsFragment.showEditAboutDialog()}"
+                    android:layout_alignBottom="@id/user_about_text"
+                    android:contentDescription="@string/edit_username_ic_desc" />
+
+            </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
@@ -196,41 +210,32 @@
             android:layout_gravity="center_vertical"
             android:padding="12dp">
 
-            <LinearLayout
+            <RelativeLayout
+                android:id="@+id/user_phone_layout"
+                android:padding="10dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:gravity="end"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/user_phone_label"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginBottom="3dp"
-                    android:paddingStart="10dp"
-                    android:padding="2dp"
-                    android:orientation="vertical">
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/test_1"
+                    android:text="@string/phone_no" />
 
+                <TextView
+                    android:id="@+id/user_phone_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:text="@{viewModel.userData.userPhoneNumber}"
+                    tools:text="+918160639228"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@id/user_phone_label" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Mobile No : "
-                        android:textColor="#E43F3F" />
-
-                    <TextView
-                        android:id="@+id/display_mobile_no"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:textSize="20sp"
-                        android:text="@{viewModel.userData.userPhoneNumber}"
-                        tools:text="+918160639228" />
-
-                </LinearLayout>
-            </LinearLayout>
+            </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
@@ -239,37 +244,38 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="10dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            app:cardElevation="6dp"
+            android:layout_margin="12dp"
+            app:cardElevation="8dp"
             app:cardCornerRadius="10dp"
-            android:layout_gravity="bottom"
+            android:layout_gravity="center_vertical"
             android:padding="12dp">
 
-            <LinearLayout
+            <RelativeLayout
+                android:id="@+id/sign_out_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:gravity="end"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
+
                 <TextView
-                    android:id="@+id/delete_account_text"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sign out"
-                    android:paddingStart="36dp"
-                    android:textSize="18sp"
-                    android:layout_gravity="center"
-                    android:textColor="#E43F3F" />
+                    android:text="@string/sign_out"
+                    android:textColor="#DDC30909"
+                    android:textSize="17sp"
+                    android:padding="10dp"
+                    tools:ignore="RelativeOverlap" />
 
                 <ImageView
-                    android:id="@+id/sign_out_btn"
-                    android:layout_width="27dp"
-                    android:layout_height="27dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_baseline_logout_24"/>
-            </LinearLayout>
+                    android:id="@+id/sign_out_icon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_margin="7dp"
+                    android:onClick="@{()->userDetailsFragment.logout()}"
+                    android:src="@drawable/ic_baseline_logout_24"
+                    android:contentDescription="@string/signout_btn_desc" />
+
+            </RelativeLayout>
+
         </com.google.android.material.card.MaterialCardView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 

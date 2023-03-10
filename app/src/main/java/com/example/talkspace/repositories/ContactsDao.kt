@@ -3,6 +3,7 @@ package com.example.talkspace.repositories
 import androidx.room.*
 import com.example.talkspace.model.SQLiteContact
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Singleton
 
 @Dao
 interface ContactsDao {

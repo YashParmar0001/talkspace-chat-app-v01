@@ -19,8 +19,11 @@ import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ContactsRepository(
+@Singleton
+class ContactsRepository @Inject constructor(
     private val contactsDao: ContactsDao
 ) {
     private val currentUser = FirebaseAuth.getInstance().currentUser

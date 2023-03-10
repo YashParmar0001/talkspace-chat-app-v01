@@ -2,6 +2,8 @@ package com.example.talkspace.repositories
 
 import androidx.room.*
 import com.example.talkspace.model.SQLiteMessage
+import dagger.Provides
+import dagger.hilt.InstallIn
 import kotlinx.coroutines.flow.Flow
 
 @Dao

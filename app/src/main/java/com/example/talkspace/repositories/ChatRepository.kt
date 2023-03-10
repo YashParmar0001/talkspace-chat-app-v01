@@ -1,20 +1,21 @@
 package com.example.talkspace.repositories
 
-import android.content.Context
-import android.net.Uri
-import android.provider.ContactsContract
 import android.util.Log
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import com.example.talkspace.model.*
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.*
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ChatRepository(
+@Singleton
+class ChatRepository @Inject constructor(
     private val chatDao: ChatDao,
     private val messageDao: MessageDao
 ) {

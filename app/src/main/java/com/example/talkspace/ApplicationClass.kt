@@ -11,21 +11,21 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class ApplicationClass: Application() {
-    private val database: AppDatabase by lazy {
-        AppDatabase.getDatabase(this)
-    }
+//    private val database: AppDatabase by lazy {
+//        AppDatabase.getDatabase(this)
+//    }
 
-    val chatRepository: ChatRepository by lazy {
-        ChatRepository(database.chatDao(), database.messageDao())
-    }
-
-    val contactRepository: ContactsRepository by lazy {
-        ContactsRepository(database.contactDao())
-    }
-
-    val userRepository: UserRepository by lazy {
-        UserRepository(this.applicationContext)
-    }
+//    val chatRepository: ChatRepository by lazy {
+//        ChatRepository(database.chatDao(), database.messageDao())
+//    }
+//
+//    val contactRepository: ContactsRepository by lazy {
+//        ContactsRepository(database.contactDao())
+//    }
+//
+//    val userRepository: UserRepository by lazy {
+//        UserRepository(this.applicationContext)
+//    }
 
     override fun onCreate() {
         super.onCreate()

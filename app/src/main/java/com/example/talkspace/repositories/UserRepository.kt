@@ -8,7 +8,6 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,8 +21,6 @@ class UserRepository @Inject constructor(
 
     val firestore = FirebaseFirestore.getInstance()
     val currentUser = FirebaseAuth.getInstance().currentUser
-
-    private var registration: ListenerRegistration? = null
 
     fun getUserDataOffline(): User {
         return User(
@@ -43,24 +40,36 @@ class UserRepository @Inject constructor(
             .get()
     }
 
-    fun changeUserName(userName: String) {
+    fun changeUserNameOnline(userName: String): Task<Void> {
         // First try to change on server
-        FirebaseFirestore.getInstance().collection("users")
-            .document(com.example.talkspace.ui.currentUser?.phoneNumber.toString())
+        return FirebaseFirestore.getInstance().collection("users")
+            .document(currentUser?.phoneNumber.toString())
             .update("userName", userName)
-            .addOnSuccessListener {
-                // After successful, change data offline
-                val editor = preferences.edit()
-                editor.putString("user_name", userName)
-                editor.apply()
-            }.addOnFailureListener {
-                Log.d("UserRepo", "Failed to change user name", it)
-            }
     }
 
-    fun startSharedPrefListener() {
+    fun changeUserNameOffline(userName: String) {
+        val editor = preferences.edit()
+        editor.putString("user_name", userName)
+        editor.apply()
+    }
+
+    fun changeUserAboutOnline(userAbout: String): Task<Void> {
+        // First try to change on server
+        return FirebaseFirestore.getInstance().collection("users")
+            .document(currentUser?.phoneNumber.toString())
+            .update("userAbout", userAbout)
+    }
+
+    fun changeUserAboutOffline(userAbout: String) {
+        val editor = preferences.edit()
+        editor.putString("user_about", userAbout)
+        editor.apply()
+    }
+
+    fun startSharedPrefListener(task: Runnable) {
         preferences.registerOnSharedPreferenceChangeListener { preferences, key ->
             Log.d("UserRepo", "Data changed: $key | ${preferences.getString(key, "")}")
+            task.run()
         }
     }
 

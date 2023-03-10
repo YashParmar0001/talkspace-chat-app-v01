@@ -11,7 +11,6 @@ import android.widget.TextView
 import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
 import com.example.talkspace.R
-import com.example.talkspace.repositories.UserRepository
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
@@ -31,7 +30,7 @@ class CustomPhotoDialog(): DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        getDialog()!!.getWindow()!!.setBackgroundDrawableResource(R.drawable.custom_dialog_contener)
+        getDialog()!!.getWindow()!!.setBackgroundDrawableResource(R.drawable.dialog_bg)
         val view = inflater.inflate(R.layout.custom_photo_dialog,container,false)
         newPhotoUri = arguments?.getString("photoUri").toString().toUri()
         view.findViewById<ImageView>(R.id.set_image).setImageURI(newPhotoUri)
