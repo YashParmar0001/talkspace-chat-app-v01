@@ -6,8 +6,13 @@
     android:id="@+id/custom_tools_bar"
     android:layout_width="match_parent"
     android:layout_height="70dp"
+    android:elevation="0.001dp"
+    android:background="@color/test_1"
+    android:minHeight="1dp"
     android:paddingTop="10dp"
-    android:paddingBottom="20dp">
+    android:paddingBottom="20dp"
+    app:layout_collapseMode="pin">
+
     <ImageView
         android:id="@+id/menu_btn"
         android:layout_width="27dp"

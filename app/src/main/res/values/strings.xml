@@ -19,12 +19,27 @@
     <string name="verify_btn">Verify</string>
     <string name="did_not_receive_the_otp_text">Did\'t receive the OTP?</string>
     <string name="resend_otp_text_btn">Resend OTP</string>
-    <string name="name_title">Name :</string>
-    <string name="about_title">About to :</string>
+    <string name="name_title">Name</string>
+    <string name="about_title">About</string>
     <string name="continue_btn_text">Continue</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="create_group">Create group</string>
     <string name="create_new_contact">Create new contact</string>
     <string name="add_contact">Add contact</string>
+    <string name="invite">INVITE</string>
+    <string name="contact_option_des">For extra options related to contact</string>
+    <string name="contact_fab_description">To add or create new chat</string>
+    <string name="edit_username_ic_desc">For editing user name</string>
+    <string name="sign_out">Sign out</string>
+    <string name="about">About</string>
+    <string name="edit_userabout_ic_desc">To edit user about</string>
+    <string name="mobile_no">Mobile No :</string>
+    <string name="signout_btn_desc">To sign out from app</string>
+    <string name="enter_username">Enter Username</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="username">Username</string>
+    <string name="enter_about">Enter about</string>
+    <string name="phone_no">Phone no</string>
 </resources>

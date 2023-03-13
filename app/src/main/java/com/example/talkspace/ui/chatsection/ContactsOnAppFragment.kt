@@ -1,93 +1,85 @@
 package com.example.talkspace.ui.chatsection
 
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.talkspace.ApplicationClass
+import com.example.talkspace.MainActivity
 import com.example.talkspace.R
-import com.example.talkspace.adapter.ContactAdapter
+import com.example.talkspace.adapter.SectionedContactAdapter
 import com.example.talkspace.databinding.FragmentContactsOnAppBinding
 import com.example.talkspace.model.SQLiteContact
 import com.example.talkspace.viewmodels.ChatViewModel
-import com.example.talkspace.viewmodels.ChatViewModelFactory
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.Dispatchers
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
-import androidx.core.view.accessibility.AccessibilityEventCompat.setAction
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.FirebaseFirestore
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ContactsOnAppFragment : Fragment() {
 
     private lateinit var binding: FragmentContactsOnAppBinding
 
     private lateinit var contacts: LiveData<List<SQLiteContact>>
+    private lateinit var appUserContacts: LiveData<List<SQLiteContact>>
+    private lateinit var nonAppUserContacts: LiveData<List<SQLiteContact>>
 
     // Firebase instance variables
     private val firestore = FirebaseFirestore.getInstance()
-    private val chatViewModel: ChatViewModel by activityViewModels {
-        ChatViewModelFactory(
-            (activity?.application as ApplicationClass).chatRepository,
-            (activity?.application as ApplicationClass).contactRepository
-        )
-    }
+    private val chatViewModel: ChatViewModel by activityViewModels()
 
-    private val pickContact =
-        registerForActivityResult(ActivityResultContracts.PickContact()) { uri ->
-            Log.d("PickContact", "Contact: $uri")
-            if (uri == null) {
-                return@registerForActivityResult
-            }
-
-            val contentResolver = requireContext().contentResolver
-
-            // For getting contact name
-            val contactCursor = contentResolver.query(uri, null, null, null, null)
-            val nameIndex =
-                contactCursor?.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
-            contactCursor?.moveToFirst()
-            val contactName = nameIndex?.let { contactCursor.getString(it) }
-            Log.d("PickContact", "Contact name: $contactName")
-
-            // For getting phone number
-            val phoneCursor = contentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                null,
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                arrayOf(uri.lastPathSegment),
-                null
-            )
-            var phoneNumber = ""
-            if (phoneCursor != null && phoneCursor.moveToFirst()) {
-                val index =
-                    phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                if (index >= 0) phoneNumber = phoneCursor.getString(index)
-            }
-
-            // Process phone number
-            phoneNumber = phoneNumber.replace(" ", "")
-            Log.d("PickContact", "Phone number after trim: $phoneNumber")
-            val length = phoneNumber.length
-            if (length != 10) {
-                phoneNumber = phoneNumber.substring(3, length)
-            }
-            Log.d("PickContact", "Contact number: $phoneNumber")
-            contactCursor?.close()
-
-            // Checking if contact is present in Firebase
-            checkUserAndGoToChat("+91$phoneNumber", contactName.toString())
-        }
+//    private val pickContact =
+//        registerForActivityResult(ActivityResultContracts.PickContact()) { uri ->
+//            Log.d("PickContact", "Contact: $uri")
+//            if (uri == null) {
+//                return@registerForActivityResult
+//            }
+//
+//            val contentResolver = requireContext().contentResolver
+//
+//            // For getting contact name
+//            val contactCursor = contentResolver.query(uri, null, null, null, null)
+//            val nameIndex =
+//                contactCursor?.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
+//            contactCursor?.moveToFirst()
+//            val contactName = nameIndex?.let { contactCursor.getString(it) }
+//            Log.d("PickContact", "Contact name: $contactName")
+//
+//            // For getting phone number
+//            val phoneCursor = contentResolver.query(
+//                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+//                null,
+//                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+//                arrayOf(uri.lastPathSegment),
+//                null
+//            )
+//            var phoneNumber = ""
+//            if (phoneCursor != null && phoneCursor.moveToFirst()) {
+//                val index =
+//                    phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+//                if (index >= 0) phoneNumber = phoneCursor.getString(index)
+//            }
+//
+//            // Process phone number
+//            phoneNumber = phoneNumber.replace(" ", "")
+//            Log.d("PickContact", "Phone number after trim: $phoneNumber")
+//            val length = phoneNumber.length
+//            if (length != 10) {
+//                phoneNumber = phoneNumber.substring(3, length)
+//            }
+//            Log.d("PickContact", "Contact number: $phoneNumber")
+//            contactCursor?.close()
+//
+//            // Checking if contact is present in Firebase
+//            checkUserAndGoToChat("+91$phoneNumber", contactName.toString())
+//        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -95,22 +87,27 @@ class ContactsOnAppFragment : Fragment() {
     ): View {
         binding = FragmentContactsOnAppBinding.inflate(inflater, container, false)
 
+        (requireActivity() as MainActivity).hideBottomNavigation()
+
         contacts = chatViewModel.getContacts()
+        appUserContacts = chatViewModel.appUserContacts
+        nonAppUserContacts = chatViewModel.nonAppUserContacts
 
         val layoutManager =
             LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.contactRecyclerview.layoutManager = layoutManager
 
-        val adapter = ContactAdapter(requireContext())
-        binding.contactRecyclerview.adapter = adapter
-
-        contacts.observe(viewLifecycleOwner) { contacts ->
-            contacts?.let {
-                val dummy = SQLiteContact("", "", "", "")
-                val extraElements = mutableListOf(dummy, dummy, dummy)
-                extraElements.addAll(contacts)
-                adapter.submitList(extraElements)
+        appUserContacts.observe(viewLifecycleOwner) { appUserContacts ->
+            appUserContacts?.let {
+                nonAppUserContacts.observe(viewLifecycleOwner) { nonAppUserContacts ->
+                    nonAppUserContacts?.let {
+                        val adapter = SectionedContactAdapter(
+                            appUserContacts, nonAppUserContacts, chatViewModel
+                        )
+                        binding.contactRecyclerview.adapter = adapter
+                    }
+                }
             }
         }
 
@@ -119,19 +116,7 @@ class ContactsOnAppFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.addPhoneContact.setOnClickListener {
-            // First check for permission
-            val permission = Manifest.permission.READ_CONTACTS
-            if (ContextCompat.checkSelfPermission(requireContext(), permission)
-                == PackageManager.PERMISSION_GRANTED
-            ) {
-                // Contact reading permission has been granted
-                pickContact.launch(null)
-            } else {
-                // Request permission for reading contact
-                requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
-            }
-        }
+
     }
 
     private val requestPermissionLauncher =
@@ -140,7 +125,7 @@ class ContactsOnAppFragment : Fragment() {
         ) { isGranted: Boolean ->
             if (isGranted) {
                 Log.i("Permission: ", "Granted")
-                pickContact.launch(null)
+//                pickContact.launch(null)
             } else {
                 Log.i("Permission: ", "Denied")
                 view?.let {
@@ -181,9 +166,10 @@ class ContactsOnAppFragment : Fragment() {
                         friendId,
                         friendName,
                         "",
-                        ""
+                        "",
+                        false
                     )
-                    chatViewModel.addContact(contact)
+//                    chatViewModel.addContact(contact)
 
                     chatViewModel.setCurrentFriendId(friendId)
                     chatViewModel.setCurrentFriendName(friendName)

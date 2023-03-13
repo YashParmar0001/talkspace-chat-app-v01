@@ -1,5 +1,6 @@
 package com.example.talkspace.viewmodels
 
+import android.content.ContentResolver
 import android.content.Context
 import androidx.lifecycle.*
 import com.example.talkspace.model.FirebaseMessage
@@ -9,8 +10,12 @@ import com.example.talkspace.model.SQLiteMessage
 import com.example.talkspace.repositories.ChatRepository
 import com.example.talkspace.repositories.ContactsRepository
 import com.example.talkspace.ui.currentUser
+import com.google.firebase.firestore.FirebaseFirestore
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class ChatViewModel(
+@HiltViewModel
+class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val contactsRepository: ContactsRepository
 ): ViewModel() {
@@ -25,6 +30,12 @@ class ChatViewModel(
 
     private val _currentFriendAbout = MutableLiveData<String>()
     val currentFriendAbout : LiveData<String> = _currentFriendAbout
+
+    private val _appUserContacts = contactsRepository.getAppUserContacts()
+    val appUserContacts: LiveData<List<SQLiteContact>> = _appUserContacts
+
+    private val _nonAppUserContacts = contactsRepository.getNonAppUserContacts()
+    val nonAppUserContacts: LiveData<List<SQLiteContact>> = _nonAppUserContacts
 
     fun sendMessage(message: FirebaseMessage) {
         chatRepository.sendMessage(currentFriendId.value.toString(), message, viewModelScope)
@@ -43,6 +54,10 @@ class ChatViewModel(
         _currentFriendAbout.value = friendAbout
     }
 
+    fun getCurrentFriendName(): String? {
+        return currentFriendName.value
+    }
+
     fun getMessages(friendId: String): LiveData<List<SQLiteMessage>> {
         return chatRepository.getMessages(friendId)
     }
@@ -51,12 +66,16 @@ class ChatViewModel(
         return contactsRepository.getContacts()
     }
 
-    fun addChat(chat: SQLChat) {
-        chatRepository.addChat(chat, viewModelScope)
+    fun getContactsAppUser(): LiveData<List<SQLiteContact>> {
+        return contactsRepository.getAppUserContacts()
     }
 
-    fun addContact(contact: SQLiteContact) {
-        contactsRepository.addContact(contact, viewModelScope)
+    fun getContactsNonAppUser(): LiveData<List<SQLiteContact>> {
+        return contactsRepository.getNonAppUserContacts()
+    }
+
+    fun addChat(chat: SQLChat) {
+        chatRepository.addChat(chat, viewModelScope)
     }
 
     fun startListeningForMessages() {
@@ -71,8 +90,8 @@ class ChatViewModel(
         chatRepository.stopListeningForMessages()
     }
 
-    fun startListeningForChats(context: Context) {
-        chatRepository.startListeningForChats(viewModelScope, context)
+    fun startListeningForChats() {
+        chatRepository.startListeningForChats(viewModelScope, appUserContacts)
     }
 
     fun stopListeningForChats() {
@@ -86,17 +105,21 @@ class ChatViewModel(
     fun stopListeningForContacts() {
         contactsRepository.stopListeningForContacts()
     }
-}
 
-class ChatViewModelFactory(
-    private val chatRepository: ChatRepository,
-    private val contactsRepository: ContactsRepository
-): ViewModelProvider.Factory {
-    override fun <T: ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return ChatViewModel(chatRepository, contactsRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
+    fun syncContacts(
+        firestore: FirebaseFirestore,
+        contentResolver: ContentResolver,
+        isFirstTimeLogin: Boolean
+    ) {
+        contactsRepository.syncContacts(firestore, contentResolver, isFirstTimeLogin)
+    }
+
+//    fun notifyUserState(status: String, context: Context) {
+//        Log.d("UserState", "Notifying user state: $status")
+//        contactsRepository.notifyAppUserContactsAboutStatus(status, context)
+//    }
+
+    fun notifyUserState1(context: Context) {
+//        contactsRepository.notifyAppUserContactsAboutStatus(context)
     }
 }

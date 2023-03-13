@@ -52,6 +52,19 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
+        <receiver android:name="ContactsChangeReceiver"
+            android:exported="false">
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.PROVIDER_CHANGED" />-->
+<!--                <data android:scheme="content" />-->
+<!--                <data android:host="com.android.contacts" />-->
+<!--            </intent-filter>-->
+        </receiver>
+<!--        <service android:name=".ContactWatchService"-->
+<!--            android:enabled="true"-->
+<!--            android:exported="false"-->
+<!--            android:permission="android.permission.BIND_JOB_SERVICE"/>-->
     </application>
 
 </manifest>

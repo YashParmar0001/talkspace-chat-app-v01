@@ -1,5 +1,7 @@
 package com.example.talkspace.ui
 
+//import com.google.firebase.firestore.ktx.firestore
+import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -7,29 +9,34 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.content.ContextCompat.startActivity
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.example.talkspace.MainActivity
 import com.example.talkspace.R
 import com.example.talkspace.SignInActivity
+import com.example.talkspace.databinding.EditAboutDialogBinding
+import com.example.talkspace.databinding.EditNameDialogBinding
 import com.example.talkspace.databinding.FragmentUserDetailBinding
 import com.example.talkspace.repositories.LocalProfilePhotoStorage
-import com.example.talkspace.repositories.UserRepositories
+import com.example.talkspace.viewmodels.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.auth.ktx.userProfileChangeRequest
-import com.google.firebase.firestore.FirebaseFirestore
-//import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 
+@AndroidEntryPoint
 class UserDetailFragment : Fragment() {
 
     private var binding: FragmentUserDetailBinding? = null
@@ -39,12 +46,16 @@ class UserDetailFragment : Fragment() {
     private var userAbout: String = ""
     private var newPhotoUri = Uri.EMPTY
 
+    private val userViewModel: UserViewModel by activityViewModels()
+
+    private lateinit var editNameDialog: Dialog
+    private lateinit var editAboutDialog: Dialog
+
     private val pickImage = registerForActivityResult(ActivityResultContracts.PickVisualMedia()){
         if (it != null){
-            Log.d("UserDetailFragment","Image picker : ${it.toString()}")
+            Log.d("UserDetailFragment","Image picker : $it")
 //        Glide.with(binding!!.userProfileImage.context).load(it).into(binding!!.userProfileImage)
             showCustomPhotoDialog(it)
-
             newPhotoUri = it
         }
     }
@@ -53,44 +64,84 @@ class UserDetailFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        val fragmentBinding = FragmentUserDetailBinding.inflate(inflater, container, false)
+        val fragmentBinding = DataBindingUtil.inflate<FragmentUserDetailBinding>(
+            inflater,
+            R.layout.fragment_user_detail,
+            container,
+            false
+        ).apply {
+            viewModel = userViewModel
+            userDetailsFragment = this@UserDetailFragment
+            lifecycleOwner = viewLifecycleOwner
+        }
         binding = fragmentBinding
+
+        (requireActivity() as MainActivity).hideBottomNavigation()
         return fragmentBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val backChangeButton = getView()?.findViewById<ImageView>(R.id.back_chat_button)
-        loadUserDetails()
-        loadUserProfilePhoto()
-        binding?.editNameIcon?.setOnClickListener {
-            showCustomDialog("Edit Name :", userName, "userName")
-        }
-        binding?.imageStorageButton?.setOnClickListener {
-            pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        val backBtn = getView()?.findViewById<ImageView>(R.id.back_btn)
 
-//            updateProfilePhoto()
+        // TODO: For edit dialogs
+        val editNameDialogBinding = EditNameDialogBinding.inflate(layoutInflater)
+        editNameDialog = Dialog(requireContext())
+        editNameDialog.setContentView(editNameDialogBinding.root)
+//        editAboutDialog.window?.setBackgroundDrawableResource()
+
+        editNameDialogBinding.saveUsernameBtn.setOnClickListener {
+            Log.d("UserRepo", "Changing username")
+            editNameDialog.dismiss()
+            val progressBar = binding?.usernameProBar
+            progressBar?.visibility = View.VISIBLE
+            val newUserName = editNameDialogBinding.editUsernameInput.text.toString()
+            userViewModel.changeUserNameOnline(newUserName)
+                .addOnSuccessListener {
+                    userViewModel.changeUserNameOffline(newUserName)
+                    progressBar?.visibility = View.GONE
+                }.addOnFailureListener {
+                    Log.d("UserRepo", "Failed to change username", it)
+                }
         }
 
-        binding?.editAboutIcon?.setOnClickListener {
-            showCustomDialog("Edit About :", userAbout, "userAbout")
+        editNameDialogBinding.cancelNameBtn.setOnClickListener {
+            editNameDialog.dismiss()
         }
-        backChangeButton?.setOnClickListener {
-//            findNavController().navigate(R.id.action_userDetailFragment_to_mainFragment)
-            findNavController().navigateUp()
+
+        val editAboutDialogBinding = EditAboutDialogBinding.inflate(layoutInflater)
+        editAboutDialog = Dialog(requireContext())
+        editAboutDialog.setContentView(editAboutDialogBinding.root)
+
+        editAboutDialogBinding.saveAboutBtn.setOnClickListener {
+            Log.d("UserRepo", "Changing userabout")
+            editAboutDialog.dismiss()
+            val progressBar = binding?.useraboutProBar
+            progressBar?.visibility = View.VISIBLE
+            val newUserAbout = editAboutDialogBinding.editAboutInput.text.toString()
+            userViewModel.changeUserAboutOnline(newUserAbout)
+                .addOnSuccessListener {
+                    userViewModel.changeUserAboutOffline(newUserAbout)
+                    progressBar?.visibility = View.GONE
+                }.addOnFailureListener {
+                    Log.d("UserRepo", "Failed to change userabout", it)
+                }
         }
-        binding?.deleteAccountImage?.setOnClickListener { logout() }
-//        binding?.deleteAccountText?.setOnClickListener { logout() }
+
+        editAboutDialogBinding.cancelAboutBtn.setOnClickListener {
+            editAboutDialog.dismiss()
+        }
+
+        backBtn?.setOnClickListener {
+            navigateBack()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         binding = null
     }
-
-//    upload to cloud storage
 
     private fun loadUserProfilePhoto(){
         Glide.with(binding!!.userProfileImage.context).load(R.drawable.ic_baseline_person_24).into(
@@ -115,49 +166,23 @@ class UserDetailFragment : Fragment() {
         }
     }
 
-    private fun loadUserDetails() {
-        Log.d("UserDetailFragment", "user Id : ${currentUser?.uid}")
-        FirebaseFirestore.getInstance().collection("users")
-            .document(currentUser?.phoneNumber.toString())
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.d("UserDetailFragment", "Error occurred in fetching User Details : ", e)
-                }
-                if (snapshot != null) {
-                    userName = snapshot["userName"].toString()
-                    binding?.displayName?.text = userName
-                    userAbout = snapshot["userAbout"].toString()
-                    binding?.displayAbout?.text = userAbout
-                    binding?.displayMobileNo?.text = snapshot["userPhoneNumber"].toString()
-                } else {
-                    Log.d("UserDetailFragment", "User details not available in firebase")
-                }
-                val source = if (snapshot?.metadata?.isFromCache == true) "cache" else "server"
-                Log.d("UserDetailFragment", "Data source : $source")
-            }
-    }
-
-    private fun logout() {
+    fun logout() {
         FirebaseAuth.getInstance().signOut()
         LocalProfilePhotoStorage.clearCache(requireContext())
         startActivity(Intent(requireContext(), SignInActivity::class.java))
         activity?.finish()
     }
 
-    private fun showCustomDialog(title: String, setInputDialog: String, key: String) {
-//        MaterialAlertDialogBuilder(requireContext())
-//            .setTitle(title)
-//            .setView(R.layout.custom_dialog)
-//            .show()
+    fun navigateBack() {
+        findNavController().navigateUp()
+    }
 
-        val bundle = Bundle()
-        bundle.putString("title", title)
-        bundle.putString("setEditInput", setInputDialog)
-        bundle.putString("key", key)
+    fun showEditNameDialog() {
+        editNameDialog.show()
+    }
 
-        val customDialog = CustomDialog()
-        customDialog.arguments = bundle
-        customDialog.show(parentFragmentManager, "custom")
+    fun showEditAboutDialog() {
+        editAboutDialog.show()
     }
 
     private fun showCustomPhotoDialog(photoUri: Uri){
@@ -166,25 +191,5 @@ class UserDetailFragment : Fragment() {
         val customPhotoDialog = CustomPhotoDialog()
         customPhotoDialog.arguments = bundle
         customPhotoDialog.show(parentFragmentManager,"coustem")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("UserDetails", "On pause called!")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("UserDetails", "On stop called")
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Log.d("UserDetails", "On start called")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("UserDetails", "On resume called")
     }
 }

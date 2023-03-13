@@ -8,11 +8,13 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.talkspace.databinding.ActivityGetUserDetailBinding
 import com.example.talkspace.model.User
-import com.example.talkspace.repositories.UserRepositories
+import com.example.talkspace.repositories.UserRepository
+import com.example.talkspace.viewmodels.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
@@ -20,7 +22,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class GetUserDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityGetUserDetailBinding
@@ -41,6 +45,8 @@ class GetUserDetailActivity : AppCompatActivity() {
         }
     }
 
+    private val userViewModel: UserViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityGetUserDetailBinding.inflate(layoutInflater)
@@ -57,11 +63,12 @@ class GetUserDetailActivity : AppCompatActivity() {
     }
 
     private fun addUserInFireStore() {
+        val userName = binding.userNameIpt.text.toString()
 
         Log.d("GetUserDetailActivity", "user detail adding in fireStore")
         val addUser = User(
             currentUser?.uid,
-            binding.userNameIpt.text.toString(),
+            userName,
             binding.userAboutIpt.text.toString(),
             currentUser?.phoneNumber,
             "",
@@ -79,19 +86,17 @@ class GetUserDetailActivity : AppCompatActivity() {
                     .addOnSuccessListener {
                         Log.d("GetUserDetailActivity", "user detail add in fireStore")
 
-                        if (newUri != Uri.EMPTY) {
-                            saveUserProfilePhoto(newUri)  // save in local cache
-                            uploadProfilePhoto()
-                        }
+//                        if (newUri != Uri.EMPTY) {
+//                            saveUserProfilePhoto(newUri)  // save in local cache
+//                            uploadProfilePhoto()
+//                        }
                         val profileUpdate = userProfileChangeRequest {
                             displayName = binding.userNameIpt.text.toString()
                         }
                         currentUser.updateProfile(profileUpdate)
                             .addOnSuccessListener {
-                                Log.d(
-                                    "GetUserDetailActivity",
-                                    "Updated user profile"
-                                )
+//                                userViewModel.setUserName(userName)
+                                Log.d("GetUserDetailActivity", "Updated user profile")
                             }
                             .addOnFailureListener {
                                 Log.d(
@@ -167,7 +172,7 @@ class GetUserDetailActivity : AppCompatActivity() {
     }
 
     //    For Offline caching
-    private fun saveUserProfilePhoto(uri: Uri) {
-        UserRepositories.saveUserProfilePhoto(this, uri)
-    }
+//    private fun saveUserProfilePhoto(uri: Uri) {
+//        UserRepository.saveUserProfilePhoto(this, uri)
+//    }
 }

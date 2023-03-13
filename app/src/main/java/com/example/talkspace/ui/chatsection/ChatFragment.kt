@@ -13,18 +13,21 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.talkspace.ApplicationClass
 import com.example.talkspace.R
 import com.example.talkspace.adapter.MessageAdapter
 import com.example.talkspace.databinding.FragmentChatBinding
-import com.example.talkspace.model.*
+import com.example.talkspace.model.FirebaseChat
+import com.example.talkspace.model.FirebaseMessage
+import com.example.talkspace.model.MessageState
+import com.example.talkspace.model.SQLiteMessage
 import com.example.talkspace.observers.MyScrollToBottomObserver
 import com.example.talkspace.ui.currentUser
 import com.example.talkspace.viewmodels.ChatViewModel
-import com.example.talkspace.viewmodels.ChatViewModelFactory
 import com.google.firebase.firestore.FirebaseFirestore
+import dagger.hilt.android.AndroidEntryPoint
 
 
+@AndroidEntryPoint
 class ChatFragment : Fragment() {
     private lateinit var binding: FragmentChatBinding
 
@@ -34,12 +37,7 @@ class ChatFragment : Fragment() {
 
     private lateinit var adapter: MessageAdapter
 
-    private val chatViewModel: ChatViewModel by activityViewModels {
-        ChatViewModelFactory(
-            (activity?.application as ApplicationClass).chatRepository,
-            (activity?.application as ApplicationClass).contactRepository
-        )
-    }
+    private val chatViewModel: ChatViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -83,7 +81,7 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val backChatButton = getView()?.findViewById<ImageView>(R.id.back_chat_button)
+        val backChatButton = getView()?.findViewById<ImageView>(R.id.back_btn)
         backChatButton?.setOnClickListener {
             findNavController().navigateUp()
         }
@@ -115,7 +113,7 @@ class ChatFragment : Fragment() {
         val senderId = currentUser?.phoneNumber.toString()
         val receiverId = currentFriendId
         val imageUrl = ""
-        val status = MessageState.SENT
+        val status = MessageState.SENDING
 
         // Delete from textEditView
         binding.massageInputText.setText("")

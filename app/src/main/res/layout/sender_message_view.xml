@@ -25,7 +25,7 @@
             android:textColor="#FFFFFF"
             android:maxWidth="200dp"
             android:textSize="18sp"
-            android:text="how are you"
+            android:text="How are you?"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:paddingStart="15dp"

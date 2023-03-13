@@ -1,33 +1,41 @@
 {
   "project_info": {
-    "project_number": "772274563977",
-    "project_id": "talk-space-926b6",
-    "storage_bucket": "talk-space-926b6.appspot.com"
+    "project_number": "889523345850",
+    "project_id": "talk-space-24708",
+    "storage_bucket": "talk-space-24708.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:772274563977:android:f190318ca0ad3cd4d9cf58",
+        "mobilesdk_app_id": "1:889523345850:android:49efde6ba881b5d9496583",
         "android_client_info": {
           "package_name": "com.example.talkspace"
         }
       },
       "oauth_client": [
         {
-          "client_id": "772274563977-4va1bd726pathuvp8u1edabr4h9ls3gi.apps.googleusercontent.com",
+          "client_id": "889523345850-hvitoi6blt8i12a2nsokfmst7odlfagn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.talkspace",
+            "certificate_hash": "b9eabd9871457e7612d8ce4a29881527c8096428"
+          }
+        },
+        {
+          "client_id": "889523345850-hou6c1qmf2m4ej0tqhkrh7kil6iabifa.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDBPF5ZrLLRIE_qHg6E7Q4sEyyJ95kzxYA"
+          "current_key": "AIzaSyAtS3StClFx3fti3Pe-pEXh-rRpDKWT_FM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "772274563977-4va1bd726pathuvp8u1edabr4h9ls3gi.apps.googleusercontent.com",
+              "client_id": "889523345850-hou6c1qmf2m4ej0tqhkrh7kil6iabifa.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
